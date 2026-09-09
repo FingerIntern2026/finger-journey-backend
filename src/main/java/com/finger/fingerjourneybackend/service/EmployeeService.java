@@ -21,9 +21,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 @Service
 @RequiredArgsConstructor
 
@@ -34,8 +31,8 @@ public class EmployeeService {
     public List<Employee> getEmployeeList() {
         return employeeRepository.findAll();
     }
-        /**
-     * 직원 등록 
+    /**
+     * 직원 등록
      * - employeeNo(사번)가 이미 있으면 ADM_003 에러
      * - currentPhase는 무조건 "PREBOARDING"으로 고정 (요청값 무시)
      */
@@ -53,20 +50,29 @@ public class EmployeeService {
     }
 
     /**
-     * 직원 정보 수정 
+     * 직원 정보 수정
      * - 대상이 없으면 COMMON_404 에러
-     * - employeeNo, currentPhase는 이 메서드에서 수정 대상 아님
+     * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate)는
+     *   전부 선택 항목 → 보낸 값만 부분적으로 수정 (null이면 그대로 유지)
      */
     public Employee updateEmployee(Long employeeId, Employee updatedEmployee) {
         // 1. employeeId로 원본 조회 → 없으면 404 에러
         Employee existing = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "COMMON_404: 해당 직원을 찾을 수 없습니다."));
 
-        // 2. 새로 받은 값들로 원본 덮어쓰기 (이름/부서/직급/입사일만)
-        existing.setName(updatedEmployee.getName());
-        existing.setOrganizationId(updatedEmployee.getOrganizationId());
-        existing.setPositionId(updatedEmployee.getPositionId());
-        existing.setHireDate(updatedEmployee.getHireDate());
+        // 2. 값이 넘어온 필드만 부분적으로 덮어쓰기 (null이면 원래 값 그대로 둠)
+        if (updatedEmployee.getName() != null) {
+            existing.setName(updatedEmployee.getName());
+        }
+        if (updatedEmployee.getOrganizationId() != null) {
+            existing.setOrganizationId(updatedEmployee.getOrganizationId());
+        }
+        if (updatedEmployee.getPositionId() != null) {
+            existing.setPositionId(updatedEmployee.getPositionId());
+        }
+        if (updatedEmployee.getHireDate() != null) {
+            existing.setHireDate(updatedEmployee.getHireDate());
+        }
 
         // 3. 저장 (employeeId가 이미 있으므로 덮어쓰기 = update)
         return employeeRepository.save(existing);
