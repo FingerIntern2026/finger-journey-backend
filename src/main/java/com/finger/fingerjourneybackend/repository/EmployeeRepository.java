@@ -11,6 +11,9 @@
 // - 등록/수정 → 지연 (기본 save()로 충분할 수도 있음)
 
 package com.finger.fingerjourneybackend.repository;
+import com.finger.fingerjourneybackend.entity.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public class EmployeeRepository {
+public interface EmployeeRepository extends JpaRepository<Employee, Long>{
+
 }

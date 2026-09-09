@@ -10,5 +10,22 @@
 
 package com.finger.fingerjourneybackend.service;
 
+
+import com.finger.fingerjourneybackend.entity.Employee;
+import com.finger.fingerjourneybackend.repository.EmployeeRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+
 public class EmployeeService {
+
+    private final EmployeeRepository employeeRepository;
+
+    public List<Employee> getEmployeeList() {
+        return employeeRepository.findAll();
+    }
 }
