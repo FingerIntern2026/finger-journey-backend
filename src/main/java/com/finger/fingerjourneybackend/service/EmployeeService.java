@@ -14,7 +14,10 @@ package com.finger.fingerjourneybackend.service;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,4 +31,51 @@ public class EmployeeService {
     public List<Employee> getEmployeeList() {
         return employeeRepository.findAll();
     }
+    /**
+     * 직원 등록
+     * - employeeNo(사번)가 이미 있으면 ADM_003 에러
+     * - currentPhase는 무조건 "PREBOARDING"으로 고정 (요청값 무시)
+     */
+    public Employee createEmployee(Employee employee) {
+        // 1. 사번 중복 체크 → 있으면 에러 던지고 여기서 멈춤
+        if (employeeRepository.existsByEmployeeNo(employee.getEmployeeNo())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "ADM_003: 이미 존재하는 사번입니다.");
+        }
+
+        // 2. 온보딩 단계는 등록 시 항상 첫 단계로 고정
+        employee.setCurrentPhase("PREBOARDING");
+
+        // 3. 저장 (employeeId가 없으므로 새로 등록됨 = insert)
+        return employeeRepository.save(employee);
+    }
+
+    /**
+     * 직원 정보 수정
+     * - 대상이 없으면 COMMON_404 에러
+     * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate)는
+     *   전부 선택 항목 → 보낸 값만 부분적으로 수정 (null이면 그대로 유지)
+     */
+    public Employee updateEmployee(Long employeeId, Employee updatedEmployee) {
+        // 1. employeeId로 원본 조회 → 없으면 404 에러
+        Employee existing = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "COMMON_404: 해당 직원을 찾을 수 없습니다."));
+
+        // 2. 값이 넘어온 필드만 부분적으로 덮어쓰기 (null이면 원래 값 그대로 둠)
+        if (updatedEmployee.getName() != null) {
+            existing.setName(updatedEmployee.getName());
+        }
+        if (updatedEmployee.getOrganizationId() != null) {
+            existing.setOrganizationId(updatedEmployee.getOrganizationId());
+        }
+        if (updatedEmployee.getPositionId() != null) {
+            existing.setPositionId(updatedEmployee.getPositionId());
+        }
+        if (updatedEmployee.getHireDate() != null) {
+            existing.setHireDate(updatedEmployee.getHireDate());
+        }
+
+        // 3. 저장 (employeeId가 이미 있으므로 덮어쓰기 = update)
+        return employeeRepository.save(existing);
+    }
+
 }
