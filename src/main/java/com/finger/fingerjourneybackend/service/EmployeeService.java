@@ -78,4 +78,27 @@ public class EmployeeService {
         return employeeRepository.save(existing);
     }
 
+    /**
+     * 직원 상세조회
+     * - employeeId로 조회
+     * - 대상이 없으면 COMMON_404 에러
+     */
+    public Employee getEmployeeDetail(Long employeeId) {
+        return employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "COMMON_404: 해당 직원을 찾을 수 없습니다."));
+    }
+
+    /**
+     * 직원 삭제
+     * - employeeId로 대상 존재 여부 먼저 확인
+     * - 대상이 없으면 COMMON_404 에러
+     * - deleteById는 대상이 없어도 조용히 넘어가는 특성이 있어서, existsById로 먼저 검증함
+     */
+    public void deleteEmployee(Long employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "COMMON_404: 삭제할 직원을 찾을 수 없습니다.");
+        }
+        employeeRepository.deleteById(employeeId);
+    }
+
 }
