@@ -3,8 +3,9 @@
 // 실제 비즈니스 로직(DB 조회/저장)은 여기 두지 않고 Service에 위임할 것
 //
 // 응답 형식 (API 명세서 기준):
-// - 성공 시: 감싸지 않고 데이터 그대로 반환 (HTTP 200)
-// - 실패 시: { "code": "...", "message": "..." } 형태로 반환
+// - 성공 시: ApiResponse로 감싸서 { "success": true, "data": {...} } 형태로 반환 (HTTP 200)
+//   (단, 삭제처럼 명세서상 Body 없음이 명시된 API는 감싸지 않고 void 반환)
+// - 실패 시: { "success": false, "code": "...", "message": "..." } 형태로 반환
 //   (예외는 exception/GlobalExceptionHandler.java 에서 전역으로 처리함)
 
 package com.finger.fingerjourneybackend.controller;
@@ -32,8 +33,6 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     // 목록조회: POST /admin/employee/list
-    // 명세서 기준 응답: { "success": true, "data": [...] } → ApiResponse로 감싸서 반환
-    // (detail/delete는 아직 이 형식으로 안 고쳐져 있음, 팀 공지 필요)
     @PostMapping("/list")
     public ApiResponse<List<EmployeeListResponse>> getEmployeeList() {
         return new ApiResponse<>(employeeService.getEmployeeList());
@@ -43,9 +42,9 @@ public class EmployeeController {
     // 요청 body: { "employeeId": 1 }
     // @Valid: EmployeeIdRequest의 @NotNull 검증을 여기서 실제로 수행함
     @PostMapping("/detail")
-    public EmployeeDetailResponse getEmployeeDetail(@Valid @RequestBody EmployeeIdRequest request) {
+    public ApiResponse<EmployeeDetailResponse> getEmployeeDetail(@Valid @RequestBody EmployeeIdRequest request) {
         Employee employee = employeeService.getEmployeeDetail(request.getEmployeeId());
-        return EmployeeDetailResponse.from(employee);
+        return new ApiResponse<>(EmployeeDetailResponse.from(employee));
     }
 
     // 삭제: POST /admin/employee/delete

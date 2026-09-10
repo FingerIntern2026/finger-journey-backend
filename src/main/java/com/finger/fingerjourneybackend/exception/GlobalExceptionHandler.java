@@ -1,59 +1,50 @@
 // GlobalExceptionHandler
 // 역할: 프로젝트 전체에서 발생하는 예외를 한 곳에서 잡아서, API 명세서 기준
-// 에러 응답 형식({ "code": "...", "message": "..." })으로 변환해주는 공통 처리기
+// 에러 응답 형식({ "success": false, "code": "...", "message": "..." })으로 변환해주는 공통 처리기
 //
-// 각 Controller/Service에서 개별적으로 try-catch를 쓰지 않아도,
-// ResponseStatusException을 던지기만 하면 여기서 자동으로 잡아서 응답을 만들어줌
+// - CustomException: 비즈니스 로직에서 의도적으로 던진 예외 → ErrorCode 그대로 응답에 반영
+// - MethodArgumentNotValidException: @Valid 검증 실패 (예: employeeId가 null)
+// - 그 외 예상 못한 예외: COMMON_500으로 통일해서 응답 (스택트레이스 노출 방지)
 //
 // 예: Service에서 이렇게 던지면
-//     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "COMMON_404: 해당 직원을 찾을 수 없습니다.")
+//     throw new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND)
 // 이 핸들러가 잡아서 아래처럼 응답함
-//     HTTP 404, { "code": "COMMON_404", "message": "해당 직원을 찾을 수 없습니다." }
+//     HTTP 404, { "success": false, "code": "ADM_002", "message": "존재하지 않는 사원입니다." }
 
 package com.finger.fingerjourneybackend.exception;
 
 import com.finger.fingerjourneybackend.dto.ErrorResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ResponseStatusException을 잡아서 ErrorResponse 형태로 변환
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException e) {
-        HttpStatus status = HttpStatus.valueOf(e.getStatusCode().value());
-
-        // reason 형식이 "COMMON_404: 해당 직원을 찾을 수 없습니다." 이런 식이라
-        // ':' 기준으로 code와 message를 분리함
-        String reason = e.getReason() != null ? e.getReason() : status.name();
-        String code;
-        String message;
-
-        if (reason.contains(":")) {
-            String[] parts = reason.split(":", 2);
-            code = parts[0].trim();
-            message = parts[1].trim();
-        } else {
-            code = status.name();
-            message = reason;
-        }
-
-        return ResponseEntity.status(status).body(new ErrorResponse(code, message));
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));
     }
 
-    // @Valid 검증 실패(예: employeeId가 null) 시 발생하는 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .findFirst()
-                .map(error -> error.getDefaultMessage())
-                .orElse("잘못된 요청입니다.");
+                .map(FieldError::getDefaultMessage)
+                .orElse(ErrorCode.INVALID_REQUEST.getMessage());
 
-        return ResponseEntity.badRequest().body(new ErrorResponse("COMMON_400", message));
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(ErrorCode.INVALID_REQUEST.getCode(), message));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));
     }
 }
