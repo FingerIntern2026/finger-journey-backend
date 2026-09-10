@@ -9,7 +9,7 @@
 // (organizationName/positionName은 추후 Organization/Position 조인 붙을 때 채워질 필드.
 //  지금은 Employee 엔티티에 이름 정보가 없어서 organizationId/positionId로 대체함 - TODO)
 
-package com.finger.fingerjourneybackend.dto;
+package com.finger.fingerjourneybackend.dto.admin.response;
 
 import com.finger.fingerjourneybackend.entity.Employee;
 import lombok.Getter;

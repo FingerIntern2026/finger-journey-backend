@@ -4,7 +4,7 @@
 //
 // @NotNull: employeeId가 없거나 null이면 컨트롤러 진입 전에 자동으로 400 에러 발생
 
-package com.finger.fingerjourneybackend.dto;
+package com.finger.fingerjourneybackend.dto.admin.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
