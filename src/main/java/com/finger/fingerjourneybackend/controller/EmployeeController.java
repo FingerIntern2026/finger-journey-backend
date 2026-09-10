@@ -9,8 +9,10 @@
 
 package com.finger.fingerjourneybackend.controller;
 
+import com.finger.fingerjourneybackend.dto.ApiResponse;
 import com.finger.fingerjourneybackend.dto.admin.request.EmployeeIdRequest;
 import com.finger.fingerjourneybackend.dto.admin.response.EmployeeDetailResponse;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponse;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -20,12 +22,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin/employee")
 @RequiredArgsConstructor
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+
+    // 목록조회: POST /admin/employee/list
+    // 명세서 기준 응답: { "success": true, "data": [...] } → ApiResponse로 감싸서 반환
+    // (detail/delete는 아직 이 형식으로 안 고쳐져 있음, 팀 공지 필요)
+    @PostMapping("/list")
+    public ApiResponse<List<EmployeeListResponse>> getEmployeeList() {
+        return new ApiResponse<>(employeeService.getEmployeeList());
+    }
 
     // 상세조회: POST /admin/employee/detail
     // 요청 body: { "employeeId": 1 }
