@@ -11,7 +11,7 @@
 package com.finger.fingerjourneybackend.service;
 
 
-import com.finger.fingerjourneybackend.dto.EmployeeListResponse;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponse;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;

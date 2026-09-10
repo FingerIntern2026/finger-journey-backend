@@ -1,4 +1,4 @@
-package com.finger.fingerjourneybackend.dto;
+package com.finger.fingerjourneybackend.dto.admin.response;
 
 import lombok.Builder;
 import lombok.Getter;
