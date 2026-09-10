@@ -11,8 +11,15 @@
 package com.finger.fingerjourneybackend.service;
 
 
+import com.finger.fingerjourneybackend.dto.EmployeeListResponse;
 import com.finger.fingerjourneybackend.entity.Employee;
+import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
+import com.finger.fingerjourneybackend.repository.OrganizationRepository;
+import com.finger.fingerjourneybackend.repository.PositionRepository;
+
+import com.finger.fingerjourneybackend.entity.Position;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -24,13 +31,47 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 
+
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final OrganizationRepository organizationRepository;
+    private final PositionRepository positionRepository;
 
-    public List<Employee> getEmployeeList() {
-        return employeeRepository.findAll();
+    public List<EmployeeListResponse> getEmployeeList() {
+        List<Employee> employees = employeeRepository.findAll();
+
+        return employees.stream()
+                .map(this::toListResponse)
+                .toList();
     }
+
+    private EmployeeListResponse toListResponse(Employee employee) {
+        String organizationName = organizationRepository.findById(employee.getOrganizationId())
+                .map(Organization::getOrganizationName)
+                .orElse(null);
+
+        String positionName = positionRepository.findById(employee.getPositionId())
+                .map(Position::getPositionName)
+                .orElse(null);
+
+        Integer progressRate = "COMPLETED".equals(employee.getCurrentPhase()) ? null : 0;
+
+        return EmployeeListResponse.builder()
+                .employeeId(employee.getEmployeeId())
+                .employeeNo(employee.getEmployeeNo())
+                .name(employee.getName())
+                .organizationName(organizationName)
+                .positionName(positionName)
+                .currentPhase(employee.getCurrentPhase())
+                .progressRate(progressRate)
+                .build();
+    }
+
+
+
+
+
     /**
      * 직원 등록
      * - employeeNo(사번)가 이미 있으면 ADM_003 에러
