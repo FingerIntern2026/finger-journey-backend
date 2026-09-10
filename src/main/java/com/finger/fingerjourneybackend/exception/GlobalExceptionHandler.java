@@ -15,6 +15,7 @@ package com.finger.fingerjourneybackend.exception;
 import com.finger.fingerjourneybackend.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,5 +44,16 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.status(status).body(new ErrorResponse(code, message));
+    }
+
+    // @Valid 검증 실패(예: employeeId가 null) 시 발생하는 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage())
+                .orElse("잘못된 요청입니다.");
+
+        return ResponseEntity.badRequest().body(new ErrorResponse("COMMON_400", message));
     }
 }
