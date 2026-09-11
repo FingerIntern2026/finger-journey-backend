@@ -4,7 +4,8 @@
 
 package com.finger.fingerjourneybackend.service;
 
-
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeCreateRequest;
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequest;
 import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponse;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
@@ -71,16 +72,19 @@ public class EmployeeService {
      * - employeeNo(사번)가 이미 있으면 EMPLOYEE_NUMBER_DUPLICATE 에러
      * - currentPhase는 무조건 "PREBOARDING"으로 고정 (요청값 무시)
      */
-    public Employee createEmployee(Employee employee) {
-        // 1. 사번 중복 체크 → 있으면 에러 던지고 여기서 멈춤
-        if (employeeRepository.existsByEmployeeNo(employee.getEmployeeNo())) {
+    public Employee createEmployee(EmployeeCreateRequest request) {
+        if (employeeRepository.existsByEmployeeNo(request.getEmployeeNo())) {
             throw new CustomException(ErrorCode.EMPLOYEE_NUMBER_DUPLICATE);
         }
 
-        // 2. 온보딩 단계는 등록 시 항상 첫 단계로 고정
+        Employee employee = new Employee();
+        employee.setEmployeeNo(request.getEmployeeNo());
+        employee.setName(request.getName());
+        employee.setOrganizationId(request.getOrganizationId());
+        employee.setPositionId(request.getPositionId());
+        employee.setHireDate(request.getHireDate());
         employee.setCurrentPhase("PREBOARDING");
 
-        // 3. 저장 (employeeId가 없으므로 새로 등록됨 = insert)
         return employeeRepository.save(employee);
     }
 
@@ -90,26 +94,23 @@ public class EmployeeService {
      * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate)는
      *   전부 선택 항목 → 보낸 값만 부분적으로 수정 (null이면 그대로 유지)
      */
-    public Employee updateEmployee(Long employeeId, Employee updatedEmployee) {
-        // 1. employeeId로 원본 조회 → 없으면 404 에러
-        Employee existing = employeeRepository.findById(employeeId)
+    public Employee updateEmployee(EmployeeUpdateRequest request) {
+        Employee existing = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
-        // 2. 값이 넘어온 필드만 부분적으로 덮어쓰기 (null이면 원래 값 그대로 둠)
-        if (updatedEmployee.getName() != null) {
-            existing.setName(updatedEmployee.getName());
+        if (request.getName() != null) {
+            existing.setName(request.getName());
         }
-        if (updatedEmployee.getOrganizationId() != null) {
-            existing.setOrganizationId(updatedEmployee.getOrganizationId());
+        if (request.getOrganizationId() != null) {
+            existing.setOrganizationId(request.getOrganizationId());
         }
-        if (updatedEmployee.getPositionId() != null) {
-            existing.setPositionId(updatedEmployee.getPositionId());
+        if (request.getPositionId() != null) {
+            existing.setPositionId(request.getPositionId());
         }
-        if (updatedEmployee.getHireDate() != null) {
-            existing.setHireDate(updatedEmployee.getHireDate());
+        if (request.getHireDate() != null) {
+            existing.setHireDate(request.getHireDate());
         }
 
-        // 3. 저장 (employeeId가 이미 있으므로 덮어쓰기 = update)
         return employeeRepository.save(existing);
     }
 
