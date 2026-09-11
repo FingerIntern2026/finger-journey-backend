@@ -10,6 +10,11 @@
 
 package com.finger.fingerjourneybackend.controller;
 
+
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeCreateRequest;
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequest;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeCreateResponse;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeUpdateResponse;
 import com.finger.fingerjourneybackend.dto.ApiResponse;
 import com.finger.fingerjourneybackend.dto.admin.request.EmployeeIdRequest;
 import com.finger.fingerjourneybackend.dto.admin.response.EmployeeDetailResponse;
@@ -23,9 +28,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
+
 
 @RestController
 @RequestMapping("/admin/employee")
@@ -64,12 +69,10 @@ public class EmployeeController {
      * 성공 응답: { "success": true, "data": { "employeeId": 5 } }
      */
     @PostMapping("/create")
-    public ApiResponse<Map<String, Object>> createEmployee(@RequestBody Employee employee) {
-        Employee saved = employeeService.createEmployee(employee);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("employeeId", saved.getEmployeeId());
-        return new ApiResponse<>(data);
+    public ApiResponse<EmployeeCreateResponse> createEmployee(@Valid @RequestBody EmployeeCreateRequest request) {
+        Employee saved = employeeService.createEmployee(request);
+        return new ApiResponse<>(EmployeeCreateResponse.from(saved));
+ 
     }
 
     /**
@@ -78,13 +81,9 @@ public class EmployeeController {
      * 성공 응답: { "success": true, "data": { "employeeId": 1, "updatedAt": "..." } }
      */
     @PostMapping("/update")
-    public ApiResponse<Map<String, Object>> updateEmployee(@RequestBody Employee employee) {
-        Employee updated = employeeService.updateEmployee(employee.getEmployeeId(), employee);
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("employeeId", updated.getEmployeeId());
-        data.put("updatedAt", updated.getUpdatedAt());
-        return new ApiResponse<>(data);
+    public ApiResponse<EmployeeUpdateResponse> updateEmployee(@Valid @RequestBody EmployeeUpdateRequest request) {
+        Employee updated = employeeService.updateEmployee(request);
+        return new ApiResponse<>(EmployeeUpdateResponse.from(updated));
     }
 
 }    
