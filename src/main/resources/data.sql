@@ -19,7 +19,10 @@ INSERT INTO employee (employee_id, employee_no, name, organization_id, position_
 ON CONFLICT (employee_id) DO NOTHING;
 
 
--- mock 데이터를 employee_id를 직접 지정해서 넣었기 때문에,
+-- mock 데이터를 id를 직접 지정해서 넣었기 때문에,
 -- 시퀀스(자동 증가 번호표 발급기)가 이 사실을 몰라 다음 등록 시 번호 충돌이 남
 -- 그래서 mock 데이터 삽입 후 시퀀스를 현재 최대값 기준으로 재설정해줌
+-- (organization/position은 지금 등록 API가 없어서 당장 안 터지지만, 나중에 생기면 employee와 똑같이 충돌하므로 미리 맞춰둠)
+SELECT setval('organization_organization_id_seq', (SELECT MAX(organization_id) FROM organization));
+SELECT setval('position_position_id_seq', (SELECT MAX(position_id) FROM position));
 SELECT setval('employee_employee_id_seq', (SELECT MAX(employee_id) FROM employee));
