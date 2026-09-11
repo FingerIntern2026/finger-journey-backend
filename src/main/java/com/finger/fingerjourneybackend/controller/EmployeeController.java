@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/employee")
@@ -54,4 +56,35 @@ public class EmployeeController {
     public void deleteEmployee(@Valid @RequestBody EmployeeIdRequest request) {
         employeeService.deleteEmployee(request.getEmployeeId());
     }
-}
+
+
+    /**
+     * 사원 등록 
+     * 요청 body: employeeNo, name, organizationId, positionId, hireDate
+     * 성공 응답: { "success": true, "data": { "employeeId": 5 } }
+     */
+    @PostMapping("/create")
+    public ApiResponse<Map<String, Object>> createEmployee(@RequestBody Employee employee) {
+        Employee saved = employeeService.createEmployee(employee);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("employeeId", saved.getEmployeeId());
+        return new ApiResponse<>(data);
+    }
+
+    /**
+     * 사원 수정 (지연 담당, ADM-004)
+     * 요청 body: employeeId(필수) + name/organizationId/positionId/hireDate(선택)
+     * 성공 응답: { "success": true, "data": { "employeeId": 1, "updatedAt": "..." } }
+     */
+    @PostMapping("/update")
+    public ApiResponse<Map<String, Object>> updateEmployee(@RequestBody Employee employee) {
+        Employee updated = employeeService.updateEmployee(employee.getEmployeeId(), employee);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("employeeId", updated.getEmployeeId());
+        data.put("updatedAt", updated.getUpdatedAt());
+        return new ApiResponse<>(data);
+    }
+
+}    
