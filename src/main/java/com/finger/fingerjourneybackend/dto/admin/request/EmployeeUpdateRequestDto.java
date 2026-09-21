@@ -8,7 +8,7 @@ import java.time.LocalDate;
 // 사원 수정 요청 전용 DTO
 // employeeId만 필수, 나머지는 선택(null 가능) - 부분 수정용
 @Getter
-public class EmployeeUpdateRequest {
+public class EmployeeUpdateRequestDto {
 
     @NotNull(message = "employeeId는 필수입니다.")
     private Long employeeId;

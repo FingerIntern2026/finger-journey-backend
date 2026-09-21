@@ -1,4 +1,4 @@
-// EmployeeIdRequest
+// EmployeeIdRequestDto
 // 역할: employeeId 하나만 필요한 요청(상세조회, 삭제)에 공통으로 쓰는 요청 DTO
 // API 명세서 기준: { "employeeId": 1 } 형태의 요청 body를 받음
 //
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class EmployeeIdRequest {
+public class EmployeeIdRequestDto {
 
     @NotNull(message = "employeeId는 필수입니다.")
     private Long employeeId;

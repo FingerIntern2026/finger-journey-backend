@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 // 사원 수정 성공 응답 전용 DTO
 @Getter
 @AllArgsConstructor
-public class EmployeeUpdateResponse {
+public class EmployeeUpdateResponseDto {
 
     private Long employeeId;
 
@@ -18,7 +18,7 @@ public class EmployeeUpdateResponse {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
-    public static EmployeeUpdateResponse from(Employee employee) {
-        return new EmployeeUpdateResponse(employee.getEmployeeId(), employee.getUpdatedAt());
+    public static EmployeeUpdateResponseDto from(Employee employee) {
+        return new EmployeeUpdateResponseDto(employee.getEmployeeId(), employee.getUpdatedAt());
     }
 }

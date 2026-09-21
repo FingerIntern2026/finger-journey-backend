@@ -4,9 +4,9 @@
 
 package com.finger.fingerjourneybackend.service;
 
-import com.finger.fingerjourneybackend.dto.admin.request.EmployeeCreateRequest;
-import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequest;
-import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponse;
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeCreateRequestDto;
+import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequestDto;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponseDto;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.exception.CustomException;
@@ -33,7 +33,7 @@ public class EmployeeService {
     private final OrganizationRepository organizationRepository;
     private final PositionRepository positionRepository;
 
-    public List<EmployeeListResponse> getEmployeeList() {
+    public List<EmployeeListResponseDto> getEmployeeList() {
         List<Employee> employees = employeeRepository.findAll();
 
         return employees.stream()
@@ -41,7 +41,7 @@ public class EmployeeService {
                 .toList();
     }
 
-    private EmployeeListResponse toListResponse(Employee employee) {
+    private EmployeeListResponseDto toListResponse(Employee employee) {
         String organizationName = organizationRepository.findById(employee.getOrganizationId())
                 .map(Organization::getOrganizationName)
                 .orElse(null);
@@ -52,7 +52,7 @@ public class EmployeeService {
 
         Integer progressRate = "COMPLETED".equals(employee.getCurrentPhase()) ? null : 0;
 
-        return EmployeeListResponse.builder()
+        return EmployeeListResponseDto.builder()
                 .employeeId(employee.getEmployeeId())
                 .employeeNo(employee.getEmployeeNo())
                 .name(employee.getName())
@@ -72,7 +72,7 @@ public class EmployeeService {
      * - employeeNo(사번)가 이미 있으면 EMPLOYEE_NUMBER_DUPLICATE 에러
      * - currentPhase는 무조건 "PREBOARDING"으로 고정 (요청값 무시)
      */
-    public Employee createEmployee(EmployeeCreateRequest request) {
+    public Employee createEmployee(EmployeeCreateRequestDto request) {
         if (employeeRepository.existsByEmployeeNo(request.getEmployeeNo())) {
             throw new CustomException(ErrorCode.EMPLOYEE_NUMBER_DUPLICATE);
         }
@@ -94,7 +94,7 @@ public class EmployeeService {
      * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate)는
      *   전부 선택 항목 → 보낸 값만 부분적으로 수정 (null이면 그대로 유지)
      */
-    public Employee updateEmployee(EmployeeUpdateRequest request) {
+    public Employee updateEmployee(EmployeeUpdateRequestDto request) {
         Employee existing = employeeRepository.findById(request.getEmployeeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND));
 
