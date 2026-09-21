@@ -1,4 +1,4 @@
-// EmployeeDetailResponse
+// EmployeeDetailResponseDto
 // 역할: 상세조회(ADM-002) API의 응답 전용 DTO
 // Employee 엔티티를 그대로 반환하지 않고, 필요한 필드만 골라서 반환하기 위해 사용
 // (엔티티를 그대로 노출하면 나중에 컬럼이 추가될 때 API 응답에 의도치 않은 정보까지
@@ -17,7 +17,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 
 @Getter
-public class EmployeeDetailResponse {
+public class EmployeeDetailResponseDto {
 
     private final Long employeeId;
     private final String employeeNo;
@@ -27,7 +27,7 @@ public class EmployeeDetailResponse {
     private final LocalDate hireDate;
     private final String currentPhase;
 
-    private EmployeeDetailResponse(Employee employee) {
+    private EmployeeDetailResponseDto(Employee employee) {
         this.employeeId = employee.getEmployeeId();
         this.employeeNo = employee.getEmployeeNo();
         this.name = employee.getName();
@@ -38,7 +38,7 @@ public class EmployeeDetailResponse {
     }
 
     // Employee 엔티티를 받아서 응답 DTO로 변환하는 정적 팩토리 메서드
-    public static EmployeeDetailResponse from(Employee employee) {
-        return new EmployeeDetailResponse(employee);
+    public static EmployeeDetailResponseDto from(Employee employee) {
+        return new EmployeeDetailResponseDto(employee);
     }
 }
