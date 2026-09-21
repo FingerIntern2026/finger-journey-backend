@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class EmployeeListResponseDto {
+public class EmployeeListResponse {
     private Long employeeId;
     private String employeeNo;
     private String name;

@@ -9,7 +9,7 @@ import java.time.LocalDate;
 // 사원 등록 요청 전용 DTO
 // employeeId, currentPhase는 아예 필드로 안 두어서, 클라이언트가 보내도 무시됨 (덮어쓰기 원천 차단)
 @Getter
-public class EmployeeCreateRequestDto {
+public class EmployeeCreateRequest {
 
     @NotBlank(message = "사번은 필수입니다.")
     private String employeeNo;
