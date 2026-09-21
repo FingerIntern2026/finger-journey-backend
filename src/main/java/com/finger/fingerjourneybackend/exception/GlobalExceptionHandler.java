@@ -13,7 +13,7 @@
 
 package com.finger.fingerjourneybackend.exception;
 
-import com.finger.fingerjourneybackend.dto.ErrorResponse;
+import com.finger.fingerjourneybackend.dto.ErrorResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,27 +24,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+    public ResponseEntity<ErrorResponseDto> handleCustomException(CustomException e) {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(errorCode.getStatus())
-                .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));
+                .body(new ErrorResponseDto(errorCode.getCode(), errorCode.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException e) {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(FieldError::getDefaultMessage)
                 .orElse(ErrorCode.INVALID_REQUEST.getMessage());
 
         return ResponseEntity.badRequest()
-                .body(new ErrorResponse(ErrorCode.INVALID_REQUEST.getCode(), message));
+                .body(new ErrorResponseDto(ErrorCode.INVALID_REQUEST.getCode(), message));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
+    public ResponseEntity<ErrorResponseDto> handleUnexpectedException(Exception e) {
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage()));
+                .body(new ErrorResponseDto(errorCode.getCode(), errorCode.getMessage()));
     }
 }
