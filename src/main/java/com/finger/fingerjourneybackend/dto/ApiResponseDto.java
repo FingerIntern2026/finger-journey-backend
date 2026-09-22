@@ -11,4 +11,8 @@ public class ApiResponseDto<T> {
     public ApiResponseDto(T data) {
         this.data = data;
     }
+
+    public ApiResponseDto() {
+        this.data = null;
+    }
 }

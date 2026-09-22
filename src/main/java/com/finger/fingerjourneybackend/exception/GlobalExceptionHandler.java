@@ -1,15 +1,18 @@
 // GlobalExceptionHandler
 // 역할: 프로젝트 전체에서 발생하는 예외를 한 곳에서 잡아서, API 명세서 기준
-// 에러 응답 형식({ "success": false, "code": "...", "message": "..." })으로 변환해주는 공통 처리기
+// 에러 응답 형식
+// ({ "success": false, "data": null, "errorCode": "...", "message": "..." })으로 변환해주는 공통 처리기
 //
-// - CustomException: 비즈니스 로직에서 의도적으로 던진 예외 → ErrorCode 그대로 응답에 반영
+// - CustomException: ErrorCode에 정의된 HTTP 상태와 오류 내용을 응답에 반영
+//   업무 조건 미충족은 HTTP 200 + success:false로, 실제 HTTP 오류는 4xx/5xx로 구분
 // - MethodArgumentNotValidException: @Valid 검증 실패 (예: employeeId가 null)
 // - 그 외 예상 못한 예외: COMMON_500으로 통일해서 응답 (스택트레이스 노출 방지)
 //
 // 예: Service에서 이렇게 던지면
 //     throw new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND)
 // 이 핸들러가 잡아서 아래처럼 응답함
-//     HTTP 404, { "success": false, "code": "ADM_002", "message": "존재하지 않는 사원입니다." }
+//     HTTP 404,
+//     { "success": false, "data": null, "errorCode": "ADM_002", "message": "존재하지 않는 사원입니다." }
 
 package com.finger.fingerjourneybackend.exception;
 
