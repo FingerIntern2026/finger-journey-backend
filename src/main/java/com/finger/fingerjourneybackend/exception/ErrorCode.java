@@ -45,6 +45,7 @@ public enum ErrorCode {
     ACROSTIC_NOT_FOUND(HttpStatus.NOT_FOUND, "CPL_002", "저장된 3행시가 없습니다."),
     REPORT_PREREQUISITE_NOT_MET(HttpStatus.BAD_REQUEST, "CPL_003", "퀴즈 또는 3행시가 완료되지 않아 리포트를 생성할 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "CPL_004", "생성된 리포트가 없습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "CPL_005", "이미 생성된 리포트가 있습니다."),
 
     // Wiki
     WIKI_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "WIK_001", "존재하지 않는 위키 항목입니다."),
