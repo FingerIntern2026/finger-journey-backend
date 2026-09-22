@@ -28,24 +28,24 @@ public enum ErrorCode {
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_003", "리프레시 토큰이 만료되었습니다. 다시 로그인해주세요."),
 
     // Bag
-    BAG_CHECKLIST_INCOMPLETE(HttpStatus.BAD_REQUEST, "BAG_001", "전체 항목이 완료되지 않아 다음 단계로 진행할 수 없습니다."),
+    BAG_CHECKLIST_INCOMPLETE(HttpStatus.OK, "BAG_001", "전체 항목이 완료되지 않아 다음 단계로 진행할 수 없습니다."),
     BAG_CHECK_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "BAG_002", "존재하지 않는 체크 항목입니다."),
 
     // Path
-    PREVIOUS_STAGE_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "PTH_001", "이전 스테이지를 먼저 완료해야 합니다."),
+    PREVIOUS_STAGE_NOT_COMPLETED(HttpStatus.OK, "PTH_001", "이전 스테이지를 먼저 완료해야 합니다."),
     STAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "PTH_002", "존재하지 않는 스테이지입니다."),
-    STAGE_NOT_ACCESSIBLE(HttpStatus.BAD_REQUEST, "PTH_003", "이미 완료되었거나 진입하지 않은 스테이지입니다."),
+    STAGE_NOT_ACCESSIBLE(HttpStatus.OK, "PTH_003", "이미 완료되었거나 진입하지 않은 스테이지입니다."),
 
     // Quiz
     QUIZ_SET_NOT_FOUND(HttpStatus.NOT_FOUND, "QUZ_001", "존재하지 않는 퀴즈 세트입니다."),
-    QUIZ_ALREADY_ANSWERED(HttpStatus.CONFLICT, "QUZ_002", "이미 응답한 문항입니다."),
+    QUIZ_ALREADY_ANSWERED(HttpStatus.OK, "QUZ_002", "이미 응답한 문항입니다."),
 
     // Completion
     ACROSTIC_LENGTH_MISMATCH(HttpStatus.BAD_REQUEST, "CPL_001", "입력 형식이 이름 글자 수와 일치하지 않습니다."),
     ACROSTIC_NOT_FOUND(HttpStatus.NOT_FOUND, "CPL_002", "저장된 3행시가 없습니다."),
-    REPORT_PREREQUISITE_NOT_MET(HttpStatus.BAD_REQUEST, "CPL_003", "퀴즈 또는 3행시가 완료되지 않아 리포트를 생성할 수 없습니다."),
+    REPORT_PREREQUISITE_NOT_MET(HttpStatus.OK, "CPL_003", "퀴즈 또는 3행시가 완료되지 않아 리포트를 생성할 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "CPL_004", "생성된 리포트가 없습니다."),
-    REPORT_ALREADY_EXISTS(HttpStatus.CONFLICT, "CPL_005", "이미 생성된 리포트가 있습니다."),
+    REPORT_ALREADY_EXISTS(HttpStatus.OK, "CPL_005", "이미 생성된 리포트가 있어 다시 생성할 수 없습니다."),
 
     // Wiki
     WIKI_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "WIK_001", "존재하지 않는 위키 항목입니다."),
