@@ -14,12 +14,14 @@
 package com.finger.fingerjourneybackend.exception;
 
 import com.finger.fingerjourneybackend.dto.ErrorResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -43,6 +45,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleUnexpectedException(Exception e) {
+        // 예상 못한 예외는 COMMON_500으로 감추더라도, 로그엔 실제 원인을 남겨야 디버깅 가능
+        log.error("예상하지 못한 예외 발생", e);
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(new ErrorResponseDto(errorCode.getCode(), errorCode.getMessage()));
