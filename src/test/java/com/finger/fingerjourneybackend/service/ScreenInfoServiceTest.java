@@ -29,15 +29,15 @@ class ScreenInfoServiceTest {
     void getScreenListMapsTaskAndNavigationFields() {
         Task task = new Task();
         task.setTaskCode("DEMO");
-        task.setExitScreenCode("DEMO-001");
+        task.setExitScreenCode("DEMO_HOM_P01");
 
         ScreenInfo screen = new ScreenInfo();
         screen.setTask(task);
-        screen.setScreenCode("DEMO-002");
+        screen.setScreenCode("DEMO_MOV_P01");
         screen.setScreenName("화면 이동 가이드");
         screen.setRoutePath("/demo/move");
         screen.setBackAction(BackAction.TARGET);
-        screen.setBackScreenCode("DEMO-001");
+        screen.setBackScreenCode("DEMO_HOM_P01");
         screen.setDisplayOrder(2);
 
         when(screenInfoRepository.findAllByOrderByTaskTaskCodeAscDisplayOrderAsc())
@@ -48,11 +48,11 @@ class ScreenInfoServiceTest {
         assertThat(result).hasSize(1);
         ScreenInfoResponseDto response = result.get(0);
         assertThat(response.getTaskCode()).isEqualTo("DEMO");
-        assertThat(response.getScreenCode()).isEqualTo("DEMO-002");
+        assertThat(response.getScreenCode()).isEqualTo("DEMO_MOV_P01");
         assertThat(response.getRoutePath()).isEqualTo("/demo/move");
         assertThat(response.getBackAction()).isEqualTo(BackAction.TARGET);
-        assertThat(response.getBackScreenCode()).isEqualTo("DEMO-001");
-        assertThat(response.getExitScreenCode()).isEqualTo("DEMO-001");
+        assertThat(response.getBackScreenCode()).isEqualTo("DEMO_HOM_P01");
+        assertThat(response.getExitScreenCode()).isEqualTo("DEMO_HOM_P01");
         assertThat(response.getDisplayOrder()).isEqualTo(2);
     }
 }

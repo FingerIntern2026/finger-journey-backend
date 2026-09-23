@@ -33,13 +33,30 @@ SELECT setval('employee_employee_id_seq', (SELECT MAX(employee_id) FROM employee
 
 
 -- 화면정보 조회 API 연동용 목 데이터
--- 프론트 routeConfig.js에 실제로 등록된 데모 경로를 사용한다.
+-- 프론트 SCREEN_CODES와 화면 목록에 등록된 데모 코드·경로를 사용한다.
 INSERT INTO task (task_code, task_name, entry_screen_code, exit_screen_code) VALUES
-    ('DEMO', '프론트 기능 데모', 'DEMO-001', 'DEMO-001')
+    ('DEMO', '프론트 기능 데모', 'DEMO_HOM_P01', 'DEMO_HOM_P01')
 ON CONFLICT (task_code) DO UPDATE SET
     task_name = EXCLUDED.task_name,
     entry_screen_code = EXCLUDED.entry_screen_code,
     exit_screen_code = EXCLUDED.exit_screen_code;
+
+-- 기존 DEMO-001 형식의 개발용 화면 시드만 한 번 정리한다.
+-- 새 화면 코드는 삭제하지 않으므로 서버를 재실행해도 screen_id가 유지된다.
+DELETE FROM screen_info
+WHERE screen_code IN (
+    'DEMO-001',
+    'DEMO-002',
+    'DEMO-003',
+    'DEMO-004',
+    'DEMO-005',
+    'DEMO-006',
+    'DEMO-007',
+    'DEMO-008',
+    'DEMO-009',
+    'DEMO-010',
+    'DEMO-011'
+);
 
 INSERT INTO screen_info (
     task_id,
@@ -52,58 +69,58 @@ INSERT INTO screen_info (
 ) VALUES
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-001', '데모 홈', '/demo',
+        'DEMO_HOM_P01', '데모 홈', '/demo',
         'BLOCK', NULL, 1
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-002', '화면 이동 가이드', '/demo/move',
-        'TARGET', 'DEMO-001', 2
+        'DEMO_MOV_P01', '화면 이동 가이드', '/demo/move',
+        'TARGET', 'DEMO_HOM_P01', 2
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-003', '권한 검사', '/demo/move/auth-check',
-        'TARGET', 'DEMO-002', 3
+        'DEMO_AUT_P01', '권한 검사', '/demo/move/auth-check',
+        'TARGET', 'DEMO_MOV_P01', 3
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-004', '파라미터 전달', '/demo/move/param',
-        'TARGET', 'DEMO-002', 4
+        'DEMO_PRM_P01', '파라미터 전달', '/demo/move/param',
+        'TARGET', 'DEMO_MOV_P01', 4
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-005', '파라미터 상세', '/demo/param-detail',
-        'TARGET', 'DEMO-004', 5
+        'DEMO_PRM_P02', '파라미터 상세', '/demo/param-detail',
+        'TARGET', 'DEMO_PRM_P01', 5
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-006', '뒤로가기 예제', '/demo/move/go-back',
-        'TARGET', 'DEMO-002', 6
+        'DEMO_MOV_P02', '뒤로가기 예제', '/demo/move/go-back',
+        'TARGET', 'DEMO_MOV_P01', 6
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-007', '컴포넌트 목록', '/demo/components',
-        'TARGET', 'DEMO-001', 7
+        'DEMO_CMP_P01', '컴포넌트 목록', '/demo/components',
+        'TARGET', 'DEMO_HOM_P01', 7
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-008', '다이얼로그 예제', '/demo/dialog',
-        'TARGET', 'DEMO-001', 8
+        'DEMO_DLG_P01', '다이얼로그 예제', '/demo/dialog',
+        'TARGET', 'DEMO_HOM_P01', 8
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-009', 'API 통신 예제', '/demo/api',
-        'TARGET', 'DEMO-001', 9
+        'DEMO_API_P01', 'API 통신 예제', '/demo/api',
+        'TARGET', 'DEMO_HOM_P01', 9
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-010', 'AI 완주 여정', '/demo/report',
-        'TARGET', 'DEMO-001', 10
+        'DEMO_RPT_P01', 'AI 완주 여정', '/demo/report',
+        'TARGET', 'DEMO_HOM_P01', 10
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO-011', 'AI 완주 리포트 결과', '/demo/report/result',
-        'TARGET', 'DEMO-010', 11
+        'DEMO_RPT_P02', 'AI 완주 리포트 결과', '/demo/report/result',
+        'TARGET', 'DEMO_RPT_P01', 11
     )
 ON CONFLICT (screen_code) DO UPDATE SET
     task_id = EXCLUDED.task_id,
