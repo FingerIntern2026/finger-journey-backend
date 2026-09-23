@@ -57,6 +57,9 @@ public class ScreenInfo {
     @Column(nullable = false, unique = true, length = 200)
     private String routePath;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean loginRequired = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private BackAction backAction;
