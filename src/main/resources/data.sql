@@ -32,6 +32,88 @@ SELECT setval('position_position_id_seq', (SELECT MAX(position_id) FROM position
 SELECT setval('employee_employee_id_seq', (SELECT MAX(employee_id) FROM employee));
 
 
+-- 화면정보 조회 API 연동용 목 데이터
+-- 프론트 routeConfig.js에 실제로 등록된 데모 경로를 사용한다.
+INSERT INTO task (task_code, task_name, entry_screen_code, exit_screen_code) VALUES
+    ('DEMO', '프론트 기능 데모', 'DEMO-001', 'DEMO-001')
+ON CONFLICT (task_code) DO UPDATE SET
+    task_name = EXCLUDED.task_name,
+    entry_screen_code = EXCLUDED.entry_screen_code,
+    exit_screen_code = EXCLUDED.exit_screen_code;
+
+INSERT INTO screen_info (
+    task_id,
+    screen_code,
+    screen_name,
+    route_path,
+    back_action,
+    back_screen_code,
+    display_order
+) VALUES
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-001', '데모 홈', '/demo',
+        'BLOCK', NULL, 1
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-002', '화면 이동 가이드', '/demo/move',
+        'TARGET', 'DEMO-001', 2
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-003', '권한 검사', '/demo/move/auth-check',
+        'TARGET', 'DEMO-002', 3
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-004', '파라미터 전달', '/demo/move/param',
+        'TARGET', 'DEMO-002', 4
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-005', '파라미터 상세', '/demo/param-detail',
+        'TARGET', 'DEMO-004', 5
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-006', '뒤로가기 예제', '/demo/move/go-back',
+        'TARGET', 'DEMO-002', 6
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-007', '컴포넌트 목록', '/demo/components',
+        'TARGET', 'DEMO-001', 7
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-008', '다이얼로그 예제', '/demo/dialog',
+        'TARGET', 'DEMO-001', 8
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-009', 'API 통신 예제', '/demo/api',
+        'TARGET', 'DEMO-001', 9
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-010', 'AI 완주 여정', '/demo/report',
+        'TARGET', 'DEMO-001', 10
+    ),
+    (
+        (SELECT task_id FROM task WHERE task_code = 'DEMO'),
+        'DEMO-011', 'AI 완주 리포트 결과', '/demo/report/result',
+        'TARGET', 'DEMO-010', 11
+    )
+ON CONFLICT (screen_code) DO UPDATE SET
+    task_id = EXCLUDED.task_id,
+    screen_name = EXCLUDED.screen_name,
+    route_path = EXCLUDED.route_path,
+    back_action = EXCLUDED.back_action,
+    back_screen_code = EXCLUDED.back_screen_code,
+    display_order = EXCLUDED.display_order;
+
+
 -- 징검다리 퀴즈 9문항 (AI 완주 리포트 생성 시 필요한 9개 응답의 근거)
 INSERT INTO quiz (quiz_id, question, option1, option2, option3, option4, display_order) VALUES
     (1, '출근 후 가장 먼저 하는 것은?', '커피 마시기', '메일 확인', '일정 확인', '동료와 대화', 1),
