@@ -80,7 +80,7 @@ INSERT INTO screen_info (
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_AUT_P01', '권한 검사', '/demo/move/auth-check', FALSE,
+        'DEMO_AUT_P01', '권한 검사', '/demo/move/auth-check', TRUE,
         'TARGET', 'DEMO_MOV_P01', 3
     ),
     (
