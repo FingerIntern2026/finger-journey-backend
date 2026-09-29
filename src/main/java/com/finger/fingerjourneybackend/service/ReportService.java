@@ -10,7 +10,6 @@ import com.finger.fingerjourneybackend.dto.ai.request.AiAcrosticLineDto;
 import com.finger.fingerjourneybackend.dto.ai.request.AiQuizResponseDto;
 import com.finger.fingerjourneybackend.dto.ai.request.AiReportRequestDto;
 import com.finger.fingerjourneybackend.dto.ai.response.AiReportResponseDto;
-import com.finger.fingerjourneybackend.dto.report.response.QuizEvidenceDto;
 import com.finger.fingerjourneybackend.dto.report.response.ReportResponseDto;
 import com.finger.fingerjourneybackend.entity.*;
 import com.finger.fingerjourneybackend.exception.CustomException;
@@ -84,8 +83,7 @@ public class ReportService {
 
         report = aiReportRepository.save(report);
 
-        List<QuizEvidenceDto> quizEvidence = buildQuizEvidence(quizResponses);
-        return ReportResponseDto.from(report, employee.getName(), quizEvidence);
+        return ReportResponseDto.from(report, employee.getName());
     }
 
     // 기존에 생성된 리포트 조회 (API-CPL-004 대응)
@@ -96,10 +94,7 @@ public class ReportService {
         AiReport report = aiReportRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.REPORT_NOT_FOUND));
 
-        List<QuizResponse> quizResponses = quizResponseRepository.findByEmployeeId(employeeId);
-        List<QuizEvidenceDto> quizEvidence = buildQuizEvidence(quizResponses);
-
-        return ReportResponseDto.from(report, employee.getName(), quizEvidence);
+        return ReportResponseDto.from(report, employee.getName());
     }
 
     private AiReportRequestDto buildAiRequest(Employee employee, List<QuizResponse> quizResponses, List<ThreeLinePoemLine> poemLines) {
@@ -112,19 +107,6 @@ public class ReportService {
                 .toList();
 
         return new AiReportRequestDto(employee.getName(), quizDtos, lineDtos);
-    }
-
-    // "근거가 된 퀴즈 답변" 그리드 — QuizResponse 테이블을 실제로 집계해서 비율을 계산함
-    // (AI는 이 숫자를 모름, 순전히 백엔드 계산)
-    private List<QuizEvidenceDto> buildQuizEvidence(List<QuizResponse> quizResponses) {
-        return quizResponses.stream()
-                .map(qr -> {
-                    long total = quizResponseRepository.countByQuizId(qr.getQuizId());
-                    long sameAnswer = quizResponseRepository.countByQuizIdAndSelectedOption(qr.getQuizId(), qr.getSelectedOption());
-                    int percentage = total == 0 ? 0 : (int) Math.round(sameAnswer * 100.0 / total);
-                    return new QuizEvidenceDto(getQuestionText(qr.getQuizId()), qr.getSelectedOption(), percentage);
-                })
-                .toList();
     }
 
     private String getQuestionText(Long quizId) {

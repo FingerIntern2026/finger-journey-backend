@@ -24,11 +24,10 @@ public class ReportResponseDto {
     private final String quote;
     private final String quoteDescription;
     private final LocalDateTime generatedAt;
-    private final List<QuizEvidenceDto> quizEvidence;
 
     private ReportResponseDto(Long reportId, Long employeeId, String employeeName, String status, String headline,
                                String reportContent, List<String> keywords, String quote, String quoteDescription,
-                               LocalDateTime generatedAt, List<QuizEvidenceDto> quizEvidence) {
+                               LocalDateTime generatedAt) {
         this.reportId = reportId;
         this.employeeId = employeeId;
         this.employeeName = employeeName;
@@ -39,11 +38,9 @@ public class ReportResponseDto {
         this.quote = quote;
         this.quoteDescription = quoteDescription;
         this.generatedAt = generatedAt;
-        this.quizEvidence = quizEvidence;
     }
 
-    // quizEvidence : 리포트 생성 시에만 계산 가능 (실패 응답 등에는 빈 리스트로 둠)
-    public static ReportResponseDto from(AiReport report, String employeeName, List<QuizEvidenceDto> quizEvidence) {
+    public static ReportResponseDto from(AiReport report, String employeeName) {
         List<String> keywordList = (report.getKeywords() == null || report.getKeywords().isBlank())
                 ? List.of()
                 : Arrays.asList(report.getKeywords().split(","));
@@ -58,8 +55,7 @@ public class ReportResponseDto {
                 keywordList,
                 report.getQuote(),
                 report.getQuoteDescription(),
-                report.getGeneratedAt(),
-                quizEvidence
+                report.getGeneratedAt()
         );
     }
 }
