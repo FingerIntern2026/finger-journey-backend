@@ -63,6 +63,7 @@ INSERT INTO screen_info (
     screen_code,
     screen_name,
     route_path,
+    file_path,
     login_required,
     back_action,
     back_screen_code,
@@ -70,63 +71,64 @@ INSERT INTO screen_info (
 ) VALUES
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_HOM_P01', '데모 홈', '/demo', FALSE,
+        'DEMO_HOM_P01', '데모 홈', '/demo', 'demo/DEMO_HOM_P01_DemoIndexPage.jsx', FALSE,
         'BLOCK', NULL, 1
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_MOV_P01', '화면 이동 가이드', '/demo/move', FALSE,
+        'DEMO_MOV_P01', '화면 이동 가이드', '/demo/move', 'demo/DEMO_MOV_P01_MoveGuidePage.jsx', FALSE,
         'TARGET', 'DEMO_HOM_P01', 2
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_AUT_P01', '권한 검사', '/demo/move/auth-check', TRUE,
+        'DEMO_AUT_P01', '권한 검사', '/demo/move/auth-check', 'demo/DEMO_AUT_P01_AuthCheckPage.jsx', TRUE,
         'TARGET', 'DEMO_MOV_P01', 3
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_PRM_P01', '파라미터 전달', '/demo/move/param', FALSE,
+        'DEMO_PRM_P01', '파라미터 전달', '/demo/move/param', 'demo/DEMO_PRM_P01_ParamPassPage.jsx', FALSE,
         'TARGET', 'DEMO_MOV_P01', 4
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_PRM_P02', '파라미터 상세', '/demo/param-detail', FALSE,
+        'DEMO_PRM_P02', '파라미터 상세', '/demo/param-detail', 'demo/DEMO_PRM_P02_ParamDetailPage.jsx', FALSE,
         'TARGET', 'DEMO_PRM_P01', 5
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_MOV_P02', '뒤로가기 예제', '/demo/move/go-back', FALSE,
+        'DEMO_MOV_P02', '뒤로가기 예제', '/demo/move/go-back', 'demo/DEMO_MOV_P02_GoBackExamplePage.jsx', FALSE,
         'TARGET', 'DEMO_MOV_P01', 6
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_CMP_P01', '컴포넌트 목록', '/demo/components', FALSE,
+        'DEMO_CMP_P01', '컴포넌트 목록', '/demo/components', 'demo/DEMO_CMP_P01_ComponentListPage.jsx', FALSE,
         'TARGET', 'DEMO_HOM_P01', 7
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_DLG_P01', '다이얼로그 예제', '/demo/dialog', FALSE,
+        'DEMO_DLG_P01', '다이얼로그 예제', '/demo/dialog', 'demo/DEMO_DLG_P01_DialogExamplePage.jsx', FALSE,
         'TARGET', 'DEMO_HOM_P01', 8
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_API_P01', 'API 통신 예제', '/demo/api', FALSE,
+        'DEMO_API_P01', 'API 통신 예제', '/demo/api', 'demo/DEMO_API_P01_ApiExamplePage.jsx', FALSE,
         'TARGET', 'DEMO_HOM_P01', 9
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_RPT_P01', 'AI 완주 여정', '/demo/report', FALSE,
+        'DEMO_RPT_P01', 'AI 완주 여정', '/demo/report', 'demo/DEMO_RPT_P01_ReportExamplePage.jsx', FALSE,
         'TARGET', 'DEMO_HOM_P01', 10
     ),
     (
         (SELECT task_id FROM task WHERE task_code = 'DEMO'),
-        'DEMO_RPT_P02', 'AI 완주 리포트 결과', '/demo/report/result', FALSE,
+        'DEMO_RPT_P02', 'AI 완주 리포트 결과', '/demo/report/result', 'demo/DEMO_RPT_P02_ReportResultPage.jsx', FALSE,
         'TARGET', 'DEMO_RPT_P01', 11
     )
 ON CONFLICT (screen_code) DO UPDATE SET
     task_id = EXCLUDED.task_id,
     screen_name = EXCLUDED.screen_name,
     route_path = EXCLUDED.route_path,
+    file_path = EXCLUDED.file_path,
     login_required = EXCLUDED.login_required,
     back_action = EXCLUDED.back_action,
     back_screen_code = EXCLUDED.back_screen_code,
