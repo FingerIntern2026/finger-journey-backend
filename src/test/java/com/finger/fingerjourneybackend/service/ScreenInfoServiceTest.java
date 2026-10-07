@@ -36,6 +36,7 @@ class ScreenInfoServiceTest {
         screen.setScreenCode("DEMO_MOV_P01");
         screen.setScreenName("화면 이동 가이드");
         screen.setRoutePath("/demo/move");
+        screen.setFilePath("demo/DEMO_MOV_P01_MoveGuidePage.jsx");
         screen.setLoginRequired(true);
         screen.setBackAction(BackAction.TARGET);
         screen.setBackScreenCode("DEMO_HOM_P01");
@@ -51,6 +52,7 @@ class ScreenInfoServiceTest {
         assertThat(response.getTaskCode()).isEqualTo("DEMO");
         assertThat(response.getScreenCode()).isEqualTo("DEMO_MOV_P01");
         assertThat(response.getRoutePath()).isEqualTo("/demo/move");
+        assertThat(response.getFilePath()).isEqualTo("demo/DEMO_MOV_P01_MoveGuidePage.jsx");
         assertThat(response.isLoginRequired()).isTrue();
         assertThat(response.getBackAction()).isEqualTo(BackAction.TARGET);
         assertThat(response.getBackScreenCode()).isEqualTo("DEMO_HOM_P01");

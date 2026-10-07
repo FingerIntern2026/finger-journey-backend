@@ -13,6 +13,7 @@ public class ScreenInfoResponseDto {
     private String screenCode;
     private String screenName;
     private String routePath;
+    private String filePath;
     private boolean loginRequired;
     private BackAction backAction;
     private String backScreenCode;
@@ -25,6 +26,7 @@ public class ScreenInfoResponseDto {
                 .screenCode(screenInfo.getScreenCode())
                 .screenName(screenInfo.getScreenName())
                 .routePath(screenInfo.getRoutePath())
+                .filePath(screenInfo.getFilePath())
                 .loginRequired(screenInfo.isLoginRequired())
                 .backAction(screenInfo.getBackAction())
                 .backScreenCode(screenInfo.getBackScreenCode())

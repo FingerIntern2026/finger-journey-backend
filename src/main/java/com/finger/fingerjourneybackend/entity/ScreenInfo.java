@@ -57,6 +57,11 @@ public class ScreenInfo {
     @Column(nullable = false, unique = true, length = 200)
     private String routePath;
 
+    // 기존 screen_info 행이 있는 개발 DB에서도 ddl-auto=update로 컬럼을 안전하게 추가한 뒤
+    // data.sql의 upsert가 값을 채울 수 있도록 첫 마이그레이션에서는 nullable로 둔다.
+    @Column(length = 300)
+    private String filePath;
+
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean loginRequired = false;
 
