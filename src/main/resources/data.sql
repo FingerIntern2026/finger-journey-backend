@@ -32,14 +32,15 @@ SELECT setval('position_position_id_seq', (SELECT MAX(position_id) FROM position
 SELECT setval('employee_employee_id_seq', (SELECT MAX(employee_id) FROM employee));
 
 
--- 화면정보 조회 API 연동용 목 데이터
--- 프론트 SCREEN_CODES와 화면 목록에 등록된 데모 코드·경로를 사용한다.
+-- 기존 데모 화면 시드: 아래의 실제 서비스 화면정보로 전환하기 전에 정리 대상만 식별한다.
+/*
 INSERT INTO task (task_code, task_name, entry_screen_code, exit_screen_code) VALUES
     ('DEMO', '프론트 기능 데모', 'DEMO_HOM_P01', 'DEMO_HOM_P01')
 ON CONFLICT (task_code) DO UPDATE SET
     task_name = EXCLUDED.task_name,
     entry_screen_code = EXCLUDED.entry_screen_code,
     exit_screen_code = EXCLUDED.exit_screen_code;
+*/
 
 -- 기존 DEMO-001 형식의 개발용 화면 시드만 한 번 정리한다.
 -- 새 화면 코드는 삭제하지 않으므로 서버를 재실행해도 screen_id가 유지된다.
@@ -58,6 +59,7 @@ WHERE screen_code IN (
     'DEMO-011'
 );
 
+/*
 INSERT INTO screen_info (
     task_id,
     screen_code,
@@ -133,7 +135,116 @@ ON CONFLICT (screen_code) DO UPDATE SET
     back_action = EXCLUDED.back_action,
     back_screen_code = EXCLUDED.back_screen_code,
     display_order = EXCLUDED.display_order;
+*/
 
+
+-- 실제 서비스 화면정보
+-- 화면은 screenCode → routePath → filePath 순으로 프론트의 동적 로더가 연결한다.
+-- 발표 환경에서는 로그인 여부와 관계없이 모든 화면을 열 수 있도록 login_required를 FALSE로 둔다.
+DELETE FROM screen_info WHERE screen_code LIKE 'DEMO_%';
+DELETE FROM task WHERE task_code = 'DEMO';
+
+INSERT INTO task (task_code, task_name, entry_screen_code, exit_screen_code) VALUES
+    ('PB', '프리보딩', 'PB_LGN_P01', 'PB_LGN_P02'),
+    ('CHK', '체크인', 'CHK_INT_P01', 'CHK_FIN_P01'),
+    ('PTH', '오솔길', 'PTH_MAP_P01', 'PTH_CPL_P03'),
+    ('WIK', '핑거 위키', 'WIK_INT_P01', 'WIK_LIS_P01'),
+    ('ADM', '관리자', 'ADM_EMP_P01', 'ADM_HRC_P01'),
+    ('CHT', 'AI 챗봇', 'CHT_MAN_F01', 'CHT_MAN_F01')
+ON CONFLICT (task_code) DO UPDATE SET
+    task_name = EXCLUDED.task_name,
+    entry_screen_code = EXCLUDED.entry_screen_code,
+    exit_screen_code = EXCLUDED.exit_screen_code;
+INSERT INTO screen_info (
+    task_id, screen_code, screen_name, route_path, file_path,
+    login_required, back_action, back_screen_code, display_order
+) VALUES
+    ((SELECT task_id FROM task WHERE task_code = 'PB'), 'PB_LGN_P01', '프리보딩 인증', '/preboarding/login', 'pb/PB_LGN_P01.jsx', FALSE, 'BLOCK', NULL, 1),
+    ((SELECT task_id FROM task WHERE task_code = 'PB'), 'PB_LGN_P02', '프리보딩 완료', '/preboarding/welcome', 'pb/PB_LGN_P02.jsx', FALSE, 'BLOCK', NULL, 2),
+
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_INT_P01', '체크인 비밀번호', '/checkin/password', 'chk/CHK_INT_P01.jsx', FALSE, 'BLOCK', NULL, 1),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_EXP_P01', '출근 준비물', '/checkin/packing', 'chk/CHK_EXP_P01.jsx', FALSE, 'BLOCK', NULL, 2),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_DOC_P01', '서류 확인', '/checkin/documents', 'chk/CHK_DOC_P01.jsx', FALSE, 'BLOCK', NULL, 3),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_EQU_P01', '장비 확인', '/checkin/equipment', 'chk/CHK_EQU_P01.jsx', FALSE, 'BLOCK', NULL, 4),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_ACC_P01', 'ERP 계정', '/checkin/erp-account', 'chk/CHK_ACC_P01.jsx', FALSE, 'BLOCK', NULL, 5),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_ACC_P02', '포레스트 로그인', '/checkin/forest-login', 'chk/CHK_ACC_P02.jsx', FALSE, 'BLOCK', NULL, 6),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_APR_P01', '결재 시작', '/checkin/approval', 'chk/CHK_APR_P01.jsx', FALSE, 'BLOCK', NULL, 7),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_APR_P02', '결재 작성', '/checkin/approval/guide', 'chk/CHK_APR_P02.jsx', FALSE, 'BLOCK', NULL, 8),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_APR_P03', '결재 완료', '/checkin/approval/complete', 'chk/CHK_APR_P03.jsx', FALSE, 'BLOCK', NULL, 9),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_SEA_P01', '좌석 선택', '/checkin/seat', 'chk/CHK_SEA_P01.jsx', FALSE, 'BLOCK', NULL, 10),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_SEA_P02', '종로 포레스트', '/checkin/seat/jongno', 'chk/CHK_SEA_P02.jsx', FALSE, 'BLOCK', NULL, 11),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_SEA_P03', '여의도 포레스트', '/checkin/seat/yeouido', 'chk/CHK_SEA_P03.jsx', FALSE, 'BLOCK', NULL, 12),
+    ((SELECT task_id FROM task WHERE task_code = 'CHK'), 'CHK_FIN_P01', '체크인 완료', '/checkin/complete', 'chk/CHK_FIN_P01.jsx', FALSE, 'BLOCK', NULL, 13),
+
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_MAP_P01', '오솔길 지도', '/path/map', 'pth/PTH_MAP_P01.jsx', FALSE, 'BLOCK', NULL, 1),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P01', '핑거 이야기 1', '/path/story/1', 'pth/str/PTH_STR_P01.jsx', FALSE, 'BLOCK', NULL, 2),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P02', '핑거 이야기 2', '/path/story/2', 'pth/str/PTH_STR_P02.jsx', FALSE, 'BLOCK', NULL, 3),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P03', '핑거 이야기 3', '/path/story/3', 'pth/str/PTH_STR_P03.jsx', FALSE, 'BLOCK', NULL, 4),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P04', '핑거 이야기 4', '/path/story/4', 'pth/str/PTH_STR_P04.jsx', FALSE, 'BLOCK', NULL, 5),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P05', '핑거 이야기 5', '/path/story/5', 'pth/str/PTH_STR_P05.jsx', FALSE, 'BLOCK', NULL, 6),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P06', '핑거 이야기 6', '/path/story/6', 'pth/str/PTH_STR_P06.jsx', FALSE, 'BLOCK', NULL, 7),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_STR_P07', '핑거 이야기 완료', '/path/story/complete', 'pth/str/PTH_STR_P07.jsx', FALSE, 'BLOCK', NULL, 8),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P01', '취업규칙 1', '/path/rule/1', 'pth/rul/PTH_RUL_P01.jsx', FALSE, 'BLOCK', NULL, 9),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P02', '취업규칙 2', '/path/rule/2', 'pth/rul/PTH_RUL_P02.jsx', FALSE, 'BLOCK', NULL, 10),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P03', '취업규칙 3', '/path/rule/3', 'pth/rul/PTH_RUL_P03.jsx', FALSE, 'BLOCK', NULL, 11),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P04', '취업규칙 4', '/path/rule/4', 'pth/rul/PTH_RUL_P04.jsx', FALSE, 'BLOCK', NULL, 12),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P05', '취업규칙 5', '/path/rule/5', 'pth/rul/PTH_RUL_P05.jsx', FALSE, 'BLOCK', NULL, 13),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P06', '취업규칙 6', '/path/rule/6', 'pth/rul/PTH_RUL_P06.jsx', FALSE, 'BLOCK', NULL, 14),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_RUL_P07', '취업규칙 완료', '/path/rule/complete', 'pth/rul/PTH_RUL_P07.jsx', FALSE, 'BLOCK', NULL, 15),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_HRP_P01', '인사규정 1', '/path/hr-policy/1', 'pth/hrp/PTH_HRP_P01.jsx', FALSE, 'BLOCK', NULL, 16),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_HRP_P02', '인사규정 2', '/path/hr-policy/2', 'pth/hrp/PTH_HRP_P02.jsx', FALSE, 'BLOCK', NULL, 17),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_HRP_P03', '인사규정 3', '/path/hr-policy/3', 'pth/hrp/PTH_HRP_P03.jsx', FALSE, 'BLOCK', NULL, 18),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_HRP_P04', '인사규정 완료', '/path/hr-policy/complete', 'pth/hrp/PTH_HRP_P04.jsx', FALSE, 'BLOCK', NULL, 19),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_ETH_P01', '윤리규정 1', '/path/ethics/1', 'pth/rth/PTH_ETH_P01.jsx', FALSE, 'BLOCK', NULL, 20),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_ETH_P02', '윤리규정 2', '/path/ethics/2', 'pth/rth/PTH_ETH_P02.jsx', FALSE, 'BLOCK', NULL, 21),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_ETH_P03', '윤리규정 3', '/path/ethics/3', 'pth/rth/PTH_ETH_P03.jsx', FALSE, 'BLOCK', NULL, 22),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_ETH_P04', '윤리규정 4', '/path/ethics/4', 'pth/rth/PTH_ETH_P04.jsx', FALSE, 'BLOCK', NULL, 23),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_ETH_P05', '윤리규정 완료', '/path/ethics/complete', 'pth/rth/PTH_ETH_P05.jsx', FALSE, 'BLOCK', NULL, 24),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_EML_P01', '이메일 작성', '/path/email/1', 'pth/eml/PTH_EML_P01.jsx', FALSE, 'BLOCK', NULL, 25),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_EML_P02', '이메일 완료', '/path/email/complete', 'pth/eml/PTH_EML_P02.jsx', FALSE, 'BLOCK', NULL, 26),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P01', '법인카드 1', '/path/card/1', 'pth/crd/PTH_CRD_P01.jsx', FALSE, 'BLOCK', NULL, 27),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P02', '법인카드 2', '/path/card/2', 'pth/crd/PTH_CRD_P02.jsx', FALSE, 'BLOCK', NULL, 28),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P03', '법인카드 3', '/path/card/3', 'pth/crd/PTH_CRD_P03.jsx', FALSE, 'BLOCK', NULL, 29),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P04', '법인카드 4', '/path/card/4', 'pth/crd/PTH_CRD_P04.jsx', FALSE, 'BLOCK', NULL, 30),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P05', '법인카드 5', '/path/card/5', 'pth/crd/PTH_CRD_P05.jsx', FALSE, 'BLOCK', NULL, 31),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P06', '법인카드 6', '/path/card/6', 'pth/crd/PTH_CRD_P06.jsx', FALSE, 'BLOCK', NULL, 32),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P07', '법인카드 7', '/path/card/7', 'pth/crd/PTH_CRD_P07.jsx', FALSE, 'BLOCK', NULL, 33),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CRD_P08', '법인카드 완료', '/path/card/complete', 'pth/crd/PTH_CRD_P08.jsx', FALSE, 'BLOCK', NULL, 34),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P01', '포레스트 1', '/path/forest/1', 'pth/for/PTH_FOR_P01.jsx', FALSE, 'BLOCK', NULL, 35),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P02', '포레스트 2', '/path/forest/2', 'pth/for/PTH_FOR_P02.jsx', FALSE, 'BLOCK', NULL, 36),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P03', '포레스트 3', '/path/forest/3', 'pth/for/PTH_FOR_P03.jsx', FALSE, 'BLOCK', NULL, 37),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P04', '포레스트 4', '/path/forest/4', 'pth/for/PTH_FOR_P04.jsx', FALSE, 'BLOCK', NULL, 38),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P05', '포레스트 5', '/path/forest/5', 'pth/for/PTH_FOR_P05.jsx', FALSE, 'BLOCK', NULL, 39),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P06', '포레스트 6', '/path/forest/6', 'pth/for/PTH_FOR_P06.jsx', FALSE, 'BLOCK', NULL, 40),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_FOR_P07', '포레스트 완료', '/path/forest/complete', 'pth/for/PTH_FOR_P07.jsx', FALSE, 'BLOCK', NULL, 41),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P01', '레벨업 1', '/path/level/1', 'pth/lev/PTH_LEV_P01.jsx', FALSE, 'BLOCK', NULL, 42),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P02', '레벨업 2', '/path/level/2', 'pth/lev/PTH_LEV_P02.jsx', FALSE, 'BLOCK', NULL, 43),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P03', '레벨업 3', '/path/level/3', 'pth/lev/PTH_LEV_P03.jsx', FALSE, 'BLOCK', NULL, 44),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P04', '레벨업 4', '/path/level/4', 'pth/lev/PTH_LEV_P04.jsx', FALSE, 'BLOCK', NULL, 45),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P05', '레벨업 5', '/path/level/5', 'pth/lev/PTH_LEV_P05.jsx', FALSE, 'BLOCK', NULL, 46),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_LEV_P06', '레벨업 완료', '/path/level/complete', 'pth/lev/PTH_LEV_P06.jsx', FALSE, 'BLOCK', NULL, 47),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CPL_P01', '완주 입력', '/path/completion/input', 'pth/cpl/PTH_CPL_P01.jsx', FALSE, 'BLOCK', NULL, 48),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CPL_P02', '완주 저장', '/path/completion/saved', 'pth/cpl/PTH_CPL_P02.jsx', FALSE, 'BLOCK', NULL, 49),
+    ((SELECT task_id FROM task WHERE task_code = 'PTH'), 'PTH_CPL_P03', '완주 리포트', '/path/completion/report', 'pth/cpl/PTH_CPL_P03.jsx', FALSE, 'BLOCK', NULL, 50),
+
+    ((SELECT task_id FROM task WHERE task_code = 'WIK'), 'WIK_INT_P01', '핑거 위키 인트로', '/wiki', 'wik/WIK_INT_P01.jsx', FALSE, 'BLOCK', NULL, 1),
+    ((SELECT task_id FROM task WHERE task_code = 'WIK'), 'WIK_LIS_P01', '핑거 위키 목록', '/wiki/list', 'wik/WIK_LIS_P01.jsx', FALSE, 'BLOCK', NULL, 2),
+
+    ((SELECT task_id FROM task WHERE task_code = 'ADM'), 'ADM_EMP_P01', '입사자 관리', '/admin/employees', 'adm/ADM_EMP_P01.jsx', FALSE, 'BLOCK', NULL, 1),
+    ((SELECT task_id FROM task WHERE task_code = 'ADM'), 'ADM_WIK_P01', '위키 관리', '/admin/wiki', 'adm/ADM_WIK_P01.jsx', FALSE, 'BLOCK', NULL, 2),
+    ((SELECT task_id FROM task WHERE task_code = 'ADM'), 'ADM_PRG_P01', '진행현황 관리', '/admin/progress', 'adm/ADM_PRG_P01.jsx', FALSE, 'BLOCK', NULL, 3),
+    ((SELECT task_id FROM task WHERE task_code = 'ADM'), 'ADM_HRC_P01', 'HR 관리', '/admin/hr', 'adm/ADM_HRC_P01.jsx', FALSE, 'BLOCK', NULL, 4),
+
+    ((SELECT task_id FROM task WHERE task_code = 'CHT'), 'CHT_MAN_F01', 'AI 챗봇', '/chat', 'cht/CHT_MAN_F01.jsx', FALSE, 'BLOCK', NULL, 1)
+ON CONFLICT (screen_code) DO UPDATE SET
+    task_id = EXCLUDED.task_id,
+    screen_name = EXCLUDED.screen_name,
+    route_path = EXCLUDED.route_path,
+    file_path = EXCLUDED.file_path,
+    login_required = EXCLUDED.login_required,
+    back_action = EXCLUDED.back_action,
+    back_screen_code = EXCLUDED.back_screen_code,
+    display_order = EXCLUDED.display_order;
 
 -- 징검다리 퀴즈 9문항 (AI 완주 리포트 생성 시 필요한 9개 응답의 근거)
 INSERT INTO quiz (quiz_id, question, option1, option2, option3, option4, display_order) VALUES
