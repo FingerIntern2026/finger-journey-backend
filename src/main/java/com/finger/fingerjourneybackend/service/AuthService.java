@@ -89,18 +89,18 @@ public class AuthService {
     }
 
     public Long getEmployeeId(String authorization) {
-    if (authorization == null || !authorization.startsWith("Bearer ")) {
-        throw new CustomException(ErrorCode.INVALID_SESSION);
-    }
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new CustomException(ErrorCode.INVALID_SESSION);
+        }
 
-    String accessToken = authorization.substring(7);
+        String accessToken = authorization.substring(7);
 
-    return jwtTokenProvider.validateAccessToken(accessToken);
+        return jwtTokenProvider.validateAccessToken(accessToken);
     }
 
     public SessionResponseDto getSession(String authorization) {
         Long employeeId = getEmployeeId(authorization);
-        
+
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.INVALID_SESSION));
 
