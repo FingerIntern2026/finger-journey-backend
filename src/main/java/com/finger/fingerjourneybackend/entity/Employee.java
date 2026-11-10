@@ -38,6 +38,10 @@ public class Employee {
 
     private LocalDate hireDate;
 
+    // 로그인 검증용 생년월일
+    @Column(nullable = false)
+    private LocalDate birthDate;
+
     // 온보딩 진행 단계: PREBOARDING / BAG / ONBOARDING / COMPLETED
     // 생성 시 서버가 기본값 "PREBOARDING"으로 세팅 (요청 body로 안 받음)
     @Column(nullable = false, length = 20)
