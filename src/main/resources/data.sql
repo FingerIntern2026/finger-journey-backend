@@ -12,14 +12,14 @@ INSERT INTO position (position_id, position_name, position_order) VALUES
     (2, '대리', 2)
 ON CONFLICT (position_id) DO NOTHING;
 
-INSERT INTO employee (employee_id, employee_no, name, organization_id, position_id, hire_date, current_phase) VALUES
-    (1, '12609001', '김신입', 2, 1, '2026-08-01', 'ONBOARDING'),
-    (2, '12609002', '이신입', 2, 1, '2026-08-05', 'PREBOARDING'),
-    (3, '12500001', '박기존', 1, 2, '2020-03-01', 'COMPLETED'),
-    (4, '12609004', '최준비', 2, 1, '2026-09-01', 'ONBOARDING'),
-    (5, '12609005', '정발표', 2, 1, '2026-09-10', 'ONBOARDING'),
-    (6, '12609006', '한마무리', 2, 1, '2026-09-15', 'ONBOARDING'),
-    (7, '12609007', '오검증', 2, 1, '2026-09-18', 'ONBOARDING')
+INSERT INTO employee (employee_id, employee_no, name, organization_id, position_id, hire_date, birth_date, current_phase) VALUES
+    (1, '12609001', '김신입', 2, 1, '2026-08-01', '2000-03-15', 'ONBOARDING'),
+    (2, '12609002', '이신입', 2, 1, '2026-08-05', '2000-03-15', 'PREBOARDING'),
+    (3, '12500001', '박기존', 1, 2, '2020-03-01', '2000-03-15', 'COMPLETED'),
+    (4, '12609004', '최준비', 2, 1, '2026-09-01', '2000-03-15', 'ONBOARDING'),
+    (5, '12609005', '정발표', 2, 1, '2026-09-10', '2000-03-15', 'ONBOARDING'),
+    (6, '12609006', '한마무리', 2, 1, '2026-09-15', '2000-03-15', 'ONBOARDING'),
+    (7, '12609007', '오검증', 2, 1, '2026-09-18', '2000-03-15', 'ONBOARDING')
 ON CONFLICT (employee_id) DO NOTHING;
 
 
