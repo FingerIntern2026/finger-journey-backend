@@ -50,8 +50,7 @@ public class EmployeeController {
     // @Valid: EmployeeIdRequestDto의 @NotNull 검증을 여기서 실제로 수행함
     @PostMapping("/detail")
     public ApiResponseDto<EmployeeDetailResponseDto> getEmployeeDetail(@Valid @RequestBody EmployeeIdRequestDto request) {
-        Employee employee = employeeService.getEmployeeDetail(request.getEmployeeId());
-        return new ApiResponseDto<>(EmployeeDetailResponseDto.from(employee));
+        return new ApiResponseDto<>(employeeService.getEmployeeDetail(request.getEmployeeId()));
     }
 
     // 삭제: POST /admin/employee/delete

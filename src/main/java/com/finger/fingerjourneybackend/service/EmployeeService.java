@@ -6,12 +6,15 @@ package com.finger.fingerjourneybackend.service;
 
 import com.finger.fingerjourneybackend.dto.admin.request.EmployeeCreateRequestDto;
 import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequestDto;
+import com.finger.fingerjourneybackend.dto.admin.response.EmployeeDetailResponseDto;
 import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponseDto;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.exception.CustomException;
 import com.finger.fingerjourneybackend.exception.ErrorCode;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
+import com.finger.fingerjourneybackend.repository.EmployeeOnboardingStageRepository;
+import com.finger.fingerjourneybackend.repository.OnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.OrganizationRepository;
 import com.finger.fingerjourneybackend.repository.PositionRepository;
 
@@ -32,6 +35,8 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final OrganizationRepository organizationRepository;
     private final PositionRepository positionRepository;
+    private final EmployeeOnboardingStageRepository employeeOnboardingStageRepository;
+    private final OnboardingStageRepository onboardingStageRepository;
 
     public List<EmployeeListResponseDto> getEmployeeList() {
         List<Employee> employees = employeeRepository.findAll();
@@ -50,7 +55,7 @@ public class EmployeeService {
                 .map(Position::getPositionName)
                 .orElse(null);
 
-        Integer progressRate = "COMPLETED".equals(employee.getCurrentPhase()) ? null : 0;
+        Integer progressRate = calculateProgressRate(employee);
 
         return EmployeeListResponseDto.builder()
                 .employeeId(employee.getEmployeeId())
@@ -61,6 +66,23 @@ public class EmployeeService {
                 .currentPhase(employee.getCurrentPhase())
                 .progressRate(progressRate)
                 .build();
+    }
+
+    private int calculateProgressRate(Employee employee) {
+        if ("COMPLETED".equals(employee.getCurrentPhase())) {
+            return 100;
+        }
+
+        long totalStageCount = onboardingStageRepository.count();
+        if (totalStageCount == 0) {
+            return 0;
+        }
+
+        long completedStageCount = employeeOnboardingStageRepository
+                .countByEmployeeIdAndStatus(employee.getEmployeeId(), "COMPLETED");
+
+        long progressRate = completedStageCount * 100 / totalStageCount;
+        return (int) Math.min(progressRate, 100);
     }
 
 
@@ -119,9 +141,18 @@ public class EmployeeService {
      * - employeeId로 조회
      * - 대상이 없으면 EMPLOYEE_NOT_FOUND 에러
      */
-    public Employee getEmployeeDetail(Long employeeId) {
-        return employeeRepository.findById(employeeId)
+    public EmployeeDetailResponseDto getEmployeeDetail(Long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND));
+
+        String organizationName = organizationRepository.findById(employee.getOrganizationId())
+                .map(Organization::getOrganizationName)
+                .orElse(null);
+        String positionName = positionRepository.findById(employee.getPositionId())
+                .map(Position::getPositionName)
+                .orElse(null);
+
+        return EmployeeDetailResponseDto.from(employee, organizationName, positionName);
     }
 
     /**
