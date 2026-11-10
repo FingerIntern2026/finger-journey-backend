@@ -6,8 +6,7 @@
 //
 // API 명세서 기준 응답 필드: employeeNo, name, organizationName, positionName,
 // hireDate, currentPhase
-// (organizationName/positionName은 추후 Organization/Position 조인 붙을 때 채워질 필드.
-//  지금은 Employee 엔티티에 이름 정보가 없어서 organizationId/positionId로 대체함 - TODO)
+// organizationName/positionName은 Service에서 Organization/Position을 조회해 전달함.
 
 package com.finger.fingerjourneybackend.dto.admin.response;
 
@@ -22,23 +21,27 @@ public class EmployeeDetailResponseDto {
     private final Long employeeId;
     private final String employeeNo;
     private final String name;
-    private final Long organizationId; // TODO: organizationName으로 교체 필요
-    private final Long positionId;     // TODO: positionName으로 교체 필요
+    private final String organizationName;
+    private final String positionName;
     private final LocalDate hireDate;
     private final String currentPhase;
 
-    private EmployeeDetailResponseDto(Employee employee) {
+    private EmployeeDetailResponseDto(Employee employee, String organizationName, String positionName) {
         this.employeeId = employee.getEmployeeId();
         this.employeeNo = employee.getEmployeeNo();
         this.name = employee.getName();
-        this.organizationId = employee.getOrganizationId();
-        this.positionId = employee.getPositionId();
+        this.organizationName = organizationName;
+        this.positionName = positionName;
         this.hireDate = employee.getHireDate();
         this.currentPhase = employee.getCurrentPhase();
     }
 
     // Employee 엔티티를 받아서 응답 DTO로 변환하는 정적 팩토리 메서드
-    public static EmployeeDetailResponseDto from(Employee employee) {
-        return new EmployeeDetailResponseDto(employee);
+    public static EmployeeDetailResponseDto from(
+            Employee employee,
+            String organizationName,
+            String positionName
+    ) {
+        return new EmployeeDetailResponseDto(employee, organizationName, positionName);
     }
 }
