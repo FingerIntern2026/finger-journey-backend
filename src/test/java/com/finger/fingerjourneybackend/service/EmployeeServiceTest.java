@@ -128,6 +128,45 @@ class EmployeeServiceTest {
         verify(employeeRepository, never()).save(org.mockito.ArgumentMatchers.any());
     }
 
+    @Test
+    void createSavesBirthDate() {
+        EmployeeCreateRequestDto request = new EmployeeCreateRequestDto();
+        ReflectionTestUtils.setField(request, "employeeNo", "12609010");
+        ReflectionTestUtils.setField(request, "name", "신입사원");
+        ReflectionTestUtils.setField(request, "organizationId", 10L);
+        ReflectionTestUtils.setField(request, "positionId", 20L);
+        ReflectionTestUtils.setField(request, "hireDate", LocalDate.of(2026, 11, 1));
+        ReflectionTestUtils.setField(request, "birthDate", LocalDate.of(2000, 3, 15));
+        when(employeeRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Employee saved = employeeService.createEmployee(request);
+
+        assertThat(saved.getBirthDate()).isEqualTo(LocalDate.of(2000, 3, 15));
+        assertThat(saved.getCurrentPhase()).isEqualTo("PREBOARDING");
+    }
+
+    @Test
+    void updateChangesBirthDateOnlyWhenProvided() {
+        Employee employee = employee(1L, "ONBOARDING");
+        employee.setBirthDate(LocalDate.of(2000, 3, 15));
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        EmployeeUpdateRequestDto withoutBirthDate = new EmployeeUpdateRequestDto();
+        ReflectionTestUtils.setField(withoutBirthDate, "employeeId", 1L);
+        ReflectionTestUtils.setField(withoutBirthDate, "name", "김수정");
+        assertThat(employeeService.updateEmployee(withoutBirthDate).getBirthDate())
+                .isEqualTo(LocalDate.of(2000, 3, 15));
+
+        EmployeeUpdateRequestDto withBirthDate = new EmployeeUpdateRequestDto();
+        ReflectionTestUtils.setField(withBirthDate, "employeeId", 1L);
+        ReflectionTestUtils.setField(withBirthDate, "birthDate", LocalDate.of(1999, 12, 31));
+        assertThat(employeeService.updateEmployee(withBirthDate).getBirthDate())
+                .isEqualTo(LocalDate.of(1999, 12, 31));
+    }
+
     private void assertError(org.assertj.core.api.ThrowableAssert.ThrowingCallable action, ErrorCode errorCode) {
         assertThatThrownBy(action)
                 .isInstanceOf(CustomException.class)

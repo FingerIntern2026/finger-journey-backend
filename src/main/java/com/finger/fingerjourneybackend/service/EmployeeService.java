@@ -105,6 +105,7 @@ public class EmployeeService {
         employee.setOrganizationId(request.getOrganizationId());
         employee.setPositionId(request.getPositionId());
         employee.setHireDate(request.getHireDate());
+        employee.setBirthDate(request.getBirthDate());
         employee.setCurrentPhase("PREBOARDING");
 
         return employeeRepository.save(employee);
@@ -113,7 +114,7 @@ public class EmployeeService {
     /**
      * 직원 정보 수정
      * - 대상이 없으면 EMPLOYEE_NOT_FOUND 에러
-     * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate)는
+     * - API 명세서 기준: employeeId만 필수, 나머지(name/organizationId/positionId/hireDate/birthDate)는
      *   전부 선택 항목 → 보낸 값만 부분적으로 수정 (null이면 그대로 유지)
      */
     public Employee updateEmployee(EmployeeUpdateRequestDto request) {
@@ -131,6 +132,9 @@ public class EmployeeService {
         }
         if (request.getHireDate() != null) {
             existing.setHireDate(request.getHireDate());
+        }
+        if (request.getBirthDate() != null) {
+            existing.setBirthDate(request.getBirthDate());
         }
 
         return employeeRepository.save(existing);

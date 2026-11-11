@@ -23,6 +23,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -44,6 +45,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDto(ErrorCode.INVALID_REQUEST.getCode(), message));
+    }
+
+    // 업로드 용량 제한(spring.servlet.multipart.max-file-size)을 넘으면 500이 아니라 파일 오류(ADM_004)로 응답
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleMaxUploadSizeException(MaxUploadSizeExceededException e) {
+        ErrorCode errorCode = ErrorCode.UNSUPPORTED_FILE;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(new ErrorResponseDto(errorCode.getCode(), errorCode.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

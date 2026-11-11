@@ -17,4 +17,5 @@ public class EmployeeUpdateRequestDto {
     private Long organizationId;
     private Long positionId;
     private LocalDate hireDate;
+    private LocalDate birthDate;
 }

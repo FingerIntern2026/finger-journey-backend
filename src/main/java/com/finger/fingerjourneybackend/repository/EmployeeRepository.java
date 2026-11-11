@@ -13,6 +13,7 @@
 package com.finger.fingerjourneybackend.repository;
 import com.finger.fingerjourneybackend.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
 import java.util.Optional;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>{
@@ -20,4 +21,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>{
     boolean existsByEmployeeNo(String employeeNo);
 
     Optional<Employee> findByEmployeeNo(String employeeNo);
+
+    // 진행현황 조직 필터용 (API-ADM-008)
+    List<Employee> findByOrganizationIdOrderByEmployeeIdAsc(Long organizationId);
 }

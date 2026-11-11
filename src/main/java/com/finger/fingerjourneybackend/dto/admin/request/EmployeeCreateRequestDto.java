@@ -25,4 +25,8 @@ public class EmployeeCreateRequestDto {
 
     @NotNull(message = "입사일은 필수입니다.")
     private LocalDate hireDate;
+
+    // 로그인(사번 + 생년월일) 검증에 쓰이므로 등록 시 반드시 받아야 한다.
+    @NotNull(message = "생년월일은 필수입니다.")
+    private LocalDate birthDate;
 }
