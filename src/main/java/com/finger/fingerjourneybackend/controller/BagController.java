@@ -1,5 +1,6 @@
 package com.finger.fingerjourneybackend.controller;
 
+import com.finger.fingerjourneybackend.config.OpenApiConfig;
 import com.finger.fingerjourneybackend.dto.ApiResponseDto;
 import com.finger.fingerjourneybackend.dto.bag.request.BagEnterRequestDto;
 import com.finger.fingerjourneybackend.dto.bag.response.BagCompleteResponseDto;
@@ -8,6 +9,7 @@ import com.finger.fingerjourneybackend.dto.bag.response.BagListItemResponseDto;
 import com.finger.fingerjourneybackend.dto.bag.response.BagStatusItemResponseDto;
 import com.finger.fingerjourneybackend.service.AuthService;
 import com.finger.fingerjourneybackend.service.BagService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/bag")
 @RequiredArgsConstructor
+@SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 public class BagController {
 
     private final BagService bagService;
