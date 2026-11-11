@@ -10,4 +10,7 @@ import java.util.Optional;
 public interface ThreeLinePoemRepository extends JpaRepository<ThreeLinePoem, Long> {
 
     Optional<ThreeLinePoem> findByEmployeeId(Long employeeId);
+
+    // 사원 삭제 시 3행시를 함께 지운다. 줄(ThreeLinePoemLine)은 먼저 지워야 한다. (API-ADM-005)
+    void deleteByEmployeeId(Long employeeId);
 }

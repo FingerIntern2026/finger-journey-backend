@@ -9,6 +9,8 @@ import com.finger.fingerjourneybackend.dto.ApiResponseDto;
 import com.finger.fingerjourneybackend.dto.admin.response.OrganizationListResponseDto;
 import com.finger.fingerjourneybackend.dto.admin.response.PositionListResponseDto;
 import com.finger.fingerjourneybackend.service.AdminCodeService;
+import com.finger.fingerjourneybackend.config.OpenApiConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor

@@ -10,4 +10,7 @@ import java.util.List;
 public interface QuizResponseRepository extends JpaRepository<QuizResponse, Long> {
 
     List<QuizResponse> findByEmployeeId(Long employeeId);
+
+    // 사원 삭제 시 응답을 함께 지운다. (API-ADM-005)
+    void deleteByEmployeeId(Long employeeId);
 }

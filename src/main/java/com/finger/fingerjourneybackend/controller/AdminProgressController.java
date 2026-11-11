@@ -9,6 +9,8 @@ import com.finger.fingerjourneybackend.dto.ApiResponseDto;
 import com.finger.fingerjourneybackend.dto.admin.request.AdminProgressListRequestDto;
 import com.finger.fingerjourneybackend.dto.admin.response.ProgressListResponseDto;
 import com.finger.fingerjourneybackend.service.AdminProgressService;
+import com.finger.fingerjourneybackend.config.OpenApiConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/admin/progress")
 @RequiredArgsConstructor

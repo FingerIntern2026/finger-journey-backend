@@ -12,7 +12,13 @@ import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.exception.CustomException;
 import com.finger.fingerjourneybackend.exception.ErrorCode;
+import com.finger.fingerjourneybackend.repository.AdminRepository;
+import com.finger.fingerjourneybackend.repository.AiReportRepository;
+import com.finger.fingerjourneybackend.repository.EmployeeBagCheckRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
+import com.finger.fingerjourneybackend.repository.QuizResponseRepository;
+import com.finger.fingerjourneybackend.repository.ThreeLinePoemLineRepository;
+import com.finger.fingerjourneybackend.repository.ThreeLinePoemRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeOnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.OnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.OrganizationRepository;
@@ -23,6 +29,7 @@ import com.finger.fingerjourneybackend.entity.Position;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,6 +44,13 @@ public class EmployeeService {
     private final PositionRepository positionRepository;
     private final EmployeeOnboardingStageRepository employeeOnboardingStageRepository;
     private final OnboardingStageRepository onboardingStageRepository;
+    // 사원 삭제 시 함께 지우는 연관 데이터 (API-ADM-005)
+    private final ThreeLinePoemRepository threeLinePoemRepository;
+    private final ThreeLinePoemLineRepository threeLinePoemLineRepository;
+    private final QuizResponseRepository quizResponseRepository;
+    private final AiReportRepository aiReportRepository;
+    private final EmployeeBagCheckRepository employeeBagCheckRepository;
+    private final AdminRepository adminRepository;
 
     public List<EmployeeListResponseDto> getEmployeeList() {
         List<Employee> employees = employeeRepository.findAll();
@@ -164,11 +178,24 @@ public class EmployeeService {
      * - employeeId로 대상 존재 여부 먼저 확인
      * - 대상이 없으면 EMPLOYEE_NOT_FOUND 에러
      * - deleteById는 대상이 없어도 조용히 넘어가는 특성이 있어서, existsById로 먼저 검증함
+     * - 사원에게 딸린 데이터(3행시, 퀴즈 응답, AI 리포트, 스테이지 진행, 가방싸기, 관리자 권한)를
+     *   사원보다 먼저 지우고, 한 트랜잭션이라 중간에 실패하면 모두 되돌린다.
      */
+    @Transactional
     public void deleteEmployee(Long employeeId) {
         if (!employeeRepository.existsById(employeeId)) {
             throw new CustomException(ErrorCode.EMPLOYEE_NOT_FOUND);
         }
+
+        threeLinePoemRepository.findByEmployeeId(employeeId)
+                .ifPresent(poem -> threeLinePoemLineRepository.deleteByPoemId(poem.getPoemId()));
+        threeLinePoemRepository.deleteByEmployeeId(employeeId);
+        quizResponseRepository.deleteByEmployeeId(employeeId);
+        aiReportRepository.deleteByEmployeeId(employeeId);
+        employeeOnboardingStageRepository.deleteByEmployeeId(employeeId);
+        employeeBagCheckRepository.deleteByEmployeeId(employeeId);
+        adminRepository.deleteByEmployeeId(employeeId);
+
         employeeRepository.deleteById(employeeId);
     }
 

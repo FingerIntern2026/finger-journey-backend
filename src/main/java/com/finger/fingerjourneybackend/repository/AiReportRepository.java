@@ -12,4 +12,7 @@ public interface AiReportRepository extends JpaRepository<AiReport, Long> {
     Optional<AiReport> findByEmployeeId(Long employeeId);
 
     boolean existsByEmployeeId(Long employeeId);
+
+    // 사원 삭제 시 리포트를 함께 지운다. (API-ADM-005)
+    void deleteByEmployeeId(Long employeeId);
 }

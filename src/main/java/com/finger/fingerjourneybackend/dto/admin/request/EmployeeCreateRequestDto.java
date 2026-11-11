@@ -2,6 +2,7 @@ package com.finger.fingerjourneybackend.dto.admin.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -12,9 +13,11 @@ import java.time.LocalDate;
 public class EmployeeCreateRequestDto {
 
     @NotBlank(message = "사번은 필수입니다.")
+    @Size(max = 20, message = "사번은 20자 이하여야 합니다.")
     private String employeeNo;
 
     @NotBlank(message = "이름은 필수입니다.")
+    @Size(max = 100, message = "이름은 100자 이하여야 합니다.")
     private String name;
 
     @NotNull(message = "조직 ID는 필수입니다.")
