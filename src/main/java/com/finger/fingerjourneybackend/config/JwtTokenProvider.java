@@ -47,8 +47,16 @@ public class JwtTokenProvider {
         return validateToken(token, "REFRESH");
     }
 
+    public Instant getRefreshTokenExpiration(String token) {
+        return validateClaims(token, "REFRESH").getExpiration().toInstant();
+    }
+
     // 서명과 만료를 확인한 뒤, 용도가 맞는 토큰에서만 직원 ID를 반환한다.
     private Long validateToken(String token, String expectedType) {
+        return Long.valueOf(validateClaims(token, expectedType).getSubject());
+    }
+
+    private Claims validateClaims(String token, String expectedType) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(secretKey)
@@ -65,7 +73,7 @@ public class JwtTokenProvider {
             if (employeeId <= 0) {
                 throw new CustomException(ErrorCode.INVALID_SESSION);
             }
-            return employeeId;
+            return claims;
         } catch (ExpiredJwtException e) {
             throw new CustomException("REFRESH".equals(expectedType)
                     ? ErrorCode.REFRESH_TOKEN_EXPIRED : ErrorCode.TOKEN_EXPIRED);
