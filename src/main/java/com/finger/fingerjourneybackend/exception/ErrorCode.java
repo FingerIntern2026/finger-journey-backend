@@ -28,7 +28,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_003", "리프레시 토큰이 만료되었습니다. 다시 로그인해주세요."),
 
     // Bag
-    BAG_CHECKLIST_INCOMPLETE(HttpStatus.OK, "BAG_001", "전체 항목이 완료되지 않아 다음 단계로 진행할 수 없습니다."),
+    BAG_CHECKLIST_INCOMPLETE(HttpStatus.BAD_REQUEST, "BAG_001", "전체 항목이 완료되지 않아 다음 단계로 진행할 수 없습니다."),
     BAG_CHECK_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "BAG_002", "존재하지 않는 체크 항목입니다."),
 
     // Path

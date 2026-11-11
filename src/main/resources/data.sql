@@ -22,6 +22,18 @@ INSERT INTO employee (employee_id, employee_no, name, organization_id, position_
     (7, '12609007', '오검증', 2, 1, '2026-09-18', '2000-03-15', 'ONBOARDING')
 ON CONFLICT (employee_id) DO NOTHING;
 
+-- 가방싸기 기본 체크 항목
+-- check_code가 이미 있으면 이름과 노출 순서만 최신 값으로 맞춘다.
+INSERT INTO bag_check_type (check_code, check_name, media_id, display_order) VALUES
+    ('DOCUMENT', '서류 확인', NULL, 1),
+    ('EQUIPMENT', '업무 장비 확인', NULL, 2),
+    ('ACCOUNT', '계정 발급 확인', NULL, 3),
+    ('CONTRACT', '계약서 작성', NULL, 4),
+    ('SEAT', '좌석 배정 확인', NULL, 5)
+ON CONFLICT (check_code) DO UPDATE SET
+    check_name = EXCLUDED.check_name,
+    display_order = EXCLUDED.display_order;
+
 
 -- mock 데이터를 id를 직접 지정해서 넣었기 때문에,
 -- 시퀀스(자동 증가 번호표 발급기)가 이 사실을 몰라 다음 등록 시 번호 충돌이 남
