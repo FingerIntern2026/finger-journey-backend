@@ -7,6 +7,9 @@ build/
 
 .env
 
+# 관리자가 올린 이미지 (로컬 업로드 폴더)
+uploads/
+
 ### STS ###
 .apt_generated
 .classpath

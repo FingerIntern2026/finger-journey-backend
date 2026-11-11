@@ -22,6 +22,12 @@ INSERT INTO employee (employee_id, employee_no, name, organization_id, position_
     (7, '12609007', '오검증', 2, 1, '2026-09-18', '2000-03-15', 'ONBOARDING')
 ON CONFLICT (employee_id) DO NOTHING;
 
+-- 관리자 권한 검사(HR/ADMIN) 테스트용 계정: 박기존(사번 12500001)을 ADMIN으로 둔다.
+-- admin_id는 자동 생성에 맡기고, 이미 있으면 건너뛴다.
+INSERT INTO admin (employee_id, email, role) VALUES
+    (3, 'admin@finger.local', 'ADMIN')
+ON CONFLICT DO NOTHING;
+
 -- 가방싸기 기본 체크 항목
 -- check_code가 이미 있으면 이름과 노출 순서만 최신 값으로 맞춘다.
 INSERT INTO bag_check_type (check_code, check_name, media_id, display_order) VALUES

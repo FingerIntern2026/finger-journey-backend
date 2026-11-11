@@ -22,6 +22,8 @@ import com.finger.fingerjourneybackend.dto.admin.response.EmployeeListResponseDt
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.service.EmployeeService;
 import jakarta.validation.Valid;
+import com.finger.fingerjourneybackend.config.OpenApiConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 
+@SecurityRequirement(name = OpenApiConfig.SECURITY_SCHEME_NAME)
 @RestController
 @RequestMapping("/admin/employee")
 @RequiredArgsConstructor

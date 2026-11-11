@@ -7,6 +7,13 @@ import com.finger.fingerjourneybackend.dto.admin.request.EmployeeUpdateRequestDt
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.Organization;
 import com.finger.fingerjourneybackend.entity.Position;
+import com.finger.fingerjourneybackend.entity.ThreeLinePoem;
+import com.finger.fingerjourneybackend.repository.AdminRepository;
+import com.finger.fingerjourneybackend.repository.AiReportRepository;
+import com.finger.fingerjourneybackend.repository.EmployeeBagCheckRepository;
+import com.finger.fingerjourneybackend.repository.QuizResponseRepository;
+import com.finger.fingerjourneybackend.repository.ThreeLinePoemLineRepository;
+import com.finger.fingerjourneybackend.repository.ThreeLinePoemRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeOnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
 import com.finger.fingerjourneybackend.repository.OnboardingStageRepository;
@@ -16,6 +23,7 @@ import com.finger.fingerjourneybackend.exception.CustomException;
 import com.finger.fingerjourneybackend.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +35,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +53,18 @@ class EmployeeServiceTest {
     private EmployeeOnboardingStageRepository employeeOnboardingStageRepository;
     @Mock
     private OnboardingStageRepository onboardingStageRepository;
+    @Mock
+    private ThreeLinePoemRepository threeLinePoemRepository;
+    @Mock
+    private ThreeLinePoemLineRepository threeLinePoemLineRepository;
+    @Mock
+    private QuizResponseRepository quizResponseRepository;
+    @Mock
+    private AiReportRepository aiReportRepository;
+    @Mock
+    private EmployeeBagCheckRepository employeeBagCheckRepository;
+    @Mock
+    private AdminRepository adminRepository;
 
     @InjectMocks
     private EmployeeService employeeService;
@@ -126,6 +147,88 @@ class EmployeeServiceTest {
 
         assertError(() -> employeeService.createEmployee(request), ErrorCode.EMPLOYEE_NUMBER_DUPLICATE);
         verify(employeeRepository, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void createSavesBirthDate() {
+        EmployeeCreateRequestDto request = new EmployeeCreateRequestDto();
+        ReflectionTestUtils.setField(request, "employeeNo", "12609010");
+        ReflectionTestUtils.setField(request, "name", "신입사원");
+        ReflectionTestUtils.setField(request, "organizationId", 10L);
+        ReflectionTestUtils.setField(request, "positionId", 20L);
+        ReflectionTestUtils.setField(request, "hireDate", LocalDate.of(2026, 11, 1));
+        ReflectionTestUtils.setField(request, "birthDate", LocalDate.of(2000, 3, 15));
+        when(employeeRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        Employee saved = employeeService.createEmployee(request);
+
+        assertThat(saved.getBirthDate()).isEqualTo(LocalDate.of(2000, 3, 15));
+        assertThat(saved.getCurrentPhase()).isEqualTo("PREBOARDING");
+    }
+
+    @Test
+    void updateChangesBirthDateOnlyWhenProvided() {
+        Employee employee = employee(1L, "ONBOARDING");
+        employee.setBirthDate(LocalDate.of(2000, 3, 15));
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(org.mockito.ArgumentMatchers.any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        EmployeeUpdateRequestDto withoutBirthDate = new EmployeeUpdateRequestDto();
+        ReflectionTestUtils.setField(withoutBirthDate, "employeeId", 1L);
+        ReflectionTestUtils.setField(withoutBirthDate, "name", "김수정");
+        assertThat(employeeService.updateEmployee(withoutBirthDate).getBirthDate())
+                .isEqualTo(LocalDate.of(2000, 3, 15));
+
+        EmployeeUpdateRequestDto withBirthDate = new EmployeeUpdateRequestDto();
+        ReflectionTestUtils.setField(withBirthDate, "employeeId", 1L);
+        ReflectionTestUtils.setField(withBirthDate, "birthDate", LocalDate.of(1999, 12, 31));
+        assertThat(employeeService.updateEmployee(withBirthDate).getBirthDate())
+                .isEqualTo(LocalDate.of(1999, 12, 31));
+    }
+
+    @Test
+    void deleteRemovesRelatedDataBeforeTheEmployee() {
+        ThreeLinePoem poem = new ThreeLinePoem();
+        poem.setPoemId(30L);
+        when(employeeRepository.existsById(1L)).thenReturn(true);
+        when(threeLinePoemRepository.findByEmployeeId(1L)).thenReturn(Optional.of(poem));
+
+        employeeService.deleteEmployee(1L);
+
+        InOrder inOrder = inOrder(threeLinePoemLineRepository, threeLinePoemRepository, quizResponseRepository,
+                aiReportRepository, employeeOnboardingStageRepository, employeeBagCheckRepository,
+                adminRepository, employeeRepository);
+        inOrder.verify(threeLinePoemLineRepository).deleteByPoemId(30L);
+        inOrder.verify(threeLinePoemRepository).deleteByEmployeeId(1L);
+        inOrder.verify(quizResponseRepository).deleteByEmployeeId(1L);
+        inOrder.verify(aiReportRepository).deleteByEmployeeId(1L);
+        inOrder.verify(employeeOnboardingStageRepository).deleteByEmployeeId(1L);
+        inOrder.verify(employeeBagCheckRepository).deleteByEmployeeId(1L);
+        inOrder.verify(adminRepository).deleteByEmployeeId(1L);
+        inOrder.verify(employeeRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteWorksForEmployeeWithoutPoem() {
+        when(employeeRepository.existsById(1L)).thenReturn(true);
+        when(threeLinePoemRepository.findByEmployeeId(1L)).thenReturn(Optional.empty());
+
+        employeeService.deleteEmployee(1L);
+
+        verify(threeLinePoemLineRepository, never()).deleteByPoemId(org.mockito.ArgumentMatchers.any());
+        verify(adminRepository).deleteByEmployeeId(1L);
+        verify(employeeRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteLeavesRelatedDataAloneWhenEmployeeDoesNotExist() {
+        when(employeeRepository.existsById(999L)).thenReturn(false);
+
+        assertError(() -> employeeService.deleteEmployee(999L), ErrorCode.EMPLOYEE_NOT_FOUND);
+        verify(adminRepository, never()).deleteByEmployeeId(org.mockito.ArgumentMatchers.any());
+        verify(employeeBagCheckRepository, never()).deleteByEmployeeId(org.mockito.ArgumentMatchers.any());
     }
 
     private void assertError(org.assertj.core.api.ThrowableAssert.ThrowingCallable action, ErrorCode errorCode) {

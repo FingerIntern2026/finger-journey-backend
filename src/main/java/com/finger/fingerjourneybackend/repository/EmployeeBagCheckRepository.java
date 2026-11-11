@@ -14,6 +14,9 @@ public interface EmployeeBagCheckRepository
 
     List<EmployeeBagCheck> findByEmployeeId(Long employeeId);
 
+    // 사원 삭제 시 가방싸기 진행 기록을 함께 지운다. (API-ADM-005)
+    void deleteByEmployeeId(Long employeeId);
+
     Optional<EmployeeBagCheck> findByEmployeeIdAndCheckTypeId(
             Long employeeId,
             Long checkTypeId
