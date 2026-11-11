@@ -137,6 +137,16 @@ public class AuthService {
                 .build();
     }
 
+    // 해당 직원의 모든 리프레시 토큰을 폐기한다. 액세스 토큰은 만료까지 유효하다.
+    @Transactional
+    public void logout(String authorization) {
+        Long employeeId = getEmployeeId(authorization);
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new CustomException(ErrorCode.INVALID_SESSION);
+        }
+        refreshTokenRepository.deleteByEmployeeId(employeeId);
+    }
+
     public Long getEmployeeId(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new CustomException(ErrorCode.INVALID_SESSION);

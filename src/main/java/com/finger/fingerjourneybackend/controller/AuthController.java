@@ -2,6 +2,8 @@ package com.finger.fingerjourneybackend.controller;
 
 import com.finger.fingerjourneybackend.dto.ApiResponseDto;
 import com.finger.fingerjourneybackend.dto.auth.request.LoginRequestDto;
+import com.finger.fingerjourneybackend.dto.auth.request.TokenRefreshRequestDto;
+import com.finger.fingerjourneybackend.dto.auth.response.TokenRefreshResponseDto;
 import com.finger.fingerjourneybackend.dto.auth.response.LoginResponseDto;
 import com.finger.fingerjourneybackend.dto.auth.response.SessionResponseDto;
 import com.finger.fingerjourneybackend.service.AuthService;
@@ -29,5 +31,17 @@ public class AuthController {
     public ApiResponseDto<SessionResponseDto> session(
             @RequestHeader(value = "Authorization", required = false) String authorization) {
         return new ApiResponseDto<>(authService.getSession(authorization));
+    }
+
+    @PostMapping("/refresh")
+    public ApiResponseDto<TokenRefreshResponseDto> refresh(
+            @Valid @RequestBody TokenRefreshRequestDto request) {
+        return new ApiResponseDto<>(authService.refresh(request));
+    }
+
+    @PostMapping("/logout")
+    public void logout(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        authService.logout(authorization);
     }
 }
