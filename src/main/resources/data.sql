@@ -505,3 +505,8 @@ WHERE NOT EXISTS (
     WHERE progress.employee_id = seed.employee_id
       AND progress.onboarding_stage_id = stage.onboarding_stage_id
 );
+
+-- 체크인 비밀번호(전체 공통): HR이 관리자 화면에서 바꿀 수 있고, 서버를 다시 켜도 바꾼 값을 덮어쓰지 않는다.
+INSERT INTO app_setting (setting_key, setting_value) VALUES
+    ('CHECKIN_PASSWORD', 'finger')
+ON CONFLICT DO NOTHING;
