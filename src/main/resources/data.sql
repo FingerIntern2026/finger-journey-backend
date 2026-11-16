@@ -435,3 +435,73 @@ ON CONFLICT (wiki_item_id) DO NOTHING;
 
 SELECT setval('wiki_category_wiki_category_id_seq', (SELECT MAX(wiki_category_id) FROM wiki_category));
 SELECT setval('wiki_item_wiki_item_id_seq', (SELECT MAX(wiki_item_id) FROM wiki_item));
+
+-- 온보딩 오솔길 기본 스테이지
+-- 프론트 pathMapData.js의 실제 콘텐츠 스테이지 8개와 순서를 맞춘다.
+WITH stage_seed(stage_name, stage_order) AS (
+    VALUES
+        ('핑거 이야기', 1),
+        ('취업규칙', 2),
+        ('인사규정', 3),
+        ('윤리규정', 4),
+        ('이메일', 5),
+        ('법인카드', 6),
+        ('포레스트', 7),
+        ('레벨업', 8)
+)
+INSERT INTO onboarding_stage (stage_name, stage_order)
+SELECT seed.stage_name, seed.stage_order
+FROM stage_seed seed
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM onboarding_stage stage
+    WHERE stage.stage_order = seed.stage_order
+);
+
+-- 온보딩 진행 상태 확인용 사원별 샘플 데이터
+-- 기존 진행 기록은 덮어쓰지 않고, 없는 사원-스테이지 조합만 추가한다.
+WITH progress_seed(employee_id, stage_order, status, started_at, completed_at) AS (
+    VALUES
+        -- 김신입: 1~2단계 완료, 3단계 진행 중
+        (1::BIGINT, 1, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days' + INTERVAL '30 minutes'),
+        (1::BIGINT, 2, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days' + INTERVAL '30 minutes'),
+        (1::BIGINT, 3, 'IN_PROGRESS', CURRENT_TIMESTAMP - INTERVAL '1 day',  NULL),
+
+        -- 최준비: 첫 번째 단계 진행 중
+        (4::BIGINT, 1, 'IN_PROGRESS', CURRENT_TIMESTAMP - INTERVAL '2 hours', NULL),
+
+        -- 정발표: 1~4단계 완료, 5단계 진행 중
+        (5::BIGINT, 1, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '5 days', CURRENT_TIMESTAMP - INTERVAL '5 days' + INTERVAL '30 minutes'),
+        (5::BIGINT, 2, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '4 days', CURRENT_TIMESTAMP - INTERVAL '4 days' + INTERVAL '30 minutes'),
+        (5::BIGINT, 3, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '3 days', CURRENT_TIMESTAMP - INTERVAL '3 days' + INTERVAL '30 minutes'),
+        (5::BIGINT, 4, 'COMPLETED',  CURRENT_TIMESTAMP - INTERVAL '2 days', CURRENT_TIMESTAMP - INTERVAL '2 days' + INTERVAL '30 minutes'),
+        (5::BIGINT, 5, 'IN_PROGRESS', CURRENT_TIMESTAMP - INTERVAL '1 day',  NULL)
+)
+INSERT INTO employee_onboarding_stage (
+    employee_id,
+    onboarding_stage_id,
+    status,
+    started_at,
+    completed_at,
+    created_at,
+    updated_at
+)
+SELECT
+    seed.employee_id,
+    stage.onboarding_stage_id,
+    seed.status,
+    seed.started_at,
+    seed.completed_at,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+FROM progress_seed seed
+JOIN employee employee
+    ON employee.employee_id = seed.employee_id
+JOIN onboarding_stage stage
+    ON stage.stage_order = seed.stage_order
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM employee_onboarding_stage progress
+    WHERE progress.employee_id = seed.employee_id
+      AND progress.onboarding_stage_id = stage.onboarding_stage_id
+);
