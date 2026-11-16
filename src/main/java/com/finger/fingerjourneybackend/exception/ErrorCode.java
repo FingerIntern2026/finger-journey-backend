@@ -53,6 +53,10 @@ public enum ErrorCode {
     WIKI_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "WIK_003", "존재하지 않는 카테고리입니다."),
     WIKI_CATEGORY_HAS_CHILDREN(HttpStatus.CONFLICT, "WIK_004", "하위 항목이 존재하여 삭제할 수 없습니다."),
 
+    // Checkin
+    // 업무 흐름상 실패라 HTTP 200으로 내려간다. (401은 프론트가 토큰 재발급으로 처리하므로 쓰지 않는다)
+    CHECKIN_PASSWORD_MISMATCH(HttpStatus.OK, "CHK_001", "체크인 비밀번호가 맞지 않습니다."),
+
     // Chat
     CHAT_QUESTION_EMPTY(HttpStatus.BAD_REQUEST, "CHT_001", "질문 내용이 비어있습니다."),
 
