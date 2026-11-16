@@ -7,6 +7,14 @@ import com.finger.fingerjourneybackend.repository.AdminRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
 import com.finger.fingerjourneybackend.repository.OrganizationRepository;
 import com.finger.fingerjourneybackend.repository.PositionRepository;
+import com.finger.fingerjourneybackend.dto.auth.request.LoginRequestDto;
+import com.finger.fingerjourneybackend.entity.Employee;
+import com.finger.fingerjourneybackend.repository.RefreshTokenRepository;
+import org.springframework.test.util.ReflectionTestUtils;
+import java.time.LocalDate;
+import java.util.Optional;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,8 +45,58 @@ class AuthServiceTest {
     @Mock
     private AdminRepository adminRepository;
 
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private AuthService authService;
+
+    @ParameterizedTest
+    @CsvSource({"1999-12-31,991231", "2000-02-29,000229", "2005-03-15,050315"})
+    void loginAcceptsSixDigitBirthDate(String storedDate, String input) {
+        Employee employee = employee(LocalDate.parse(storedDate));
+        when(employeeRepository.findByEmployeeNo("12345678")).thenReturn(Optional.of(employee));
+        when(organizationRepository.findById(2L)).thenReturn(Optional.empty());
+        when(positionRepository.findById(3L)).thenReturn(Optional.empty());
+        when(adminRepository.findByEmployeeId(1L)).thenReturn(Optional.empty());
+        when(jwtTokenProvider.createAccessToken(1L)).thenReturn("access");
+        when(jwtTokenProvider.createRefreshToken(1L)).thenReturn("refresh");
+
+        var response = authService.authenticate(request(input));
+
+        assertThat(response.getEmployeeId()).isEqualTo(1L);
+        assertThat(response.getRedirectScreen()).isEqualTo("PB_LGN_P02");
+        assertThat(response.getAccessToken()).isEqualTo("access");
+        verify(refreshTokenRepository).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"990230", "991232", "991230", "19991231", "abcdef", "12345"})
+    void loginRejectsInvalidOrMismatchedBirthDate(String input) {
+        when(employeeRepository.findByEmployeeNo("12345678"))
+                .thenReturn(Optional.of(employee(LocalDate.of(1999, 12, 31))));
+        assertThatThrownBy(() -> authService.authenticate(request(input)))
+                .isInstanceOfSatisfying(CustomException.class,
+                        error -> assertThat(error.getErrorCode()).isEqualTo(ErrorCode.LOGIN_FAILED));
+        verifyNoInteractions(jwtTokenProvider, refreshTokenRepository);
+    }
+
+    private LoginRequestDto request(String birthDate) {
+        LoginRequestDto request = new LoginRequestDto();
+        ReflectionTestUtils.setField(request, "empNo", "12345678");
+        ReflectionTestUtils.setField(request, "birthDate", birthDate);
+        return request;
+    }
+
+    private Employee employee(LocalDate birthDate) {
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setOrganizationId(2L);
+        employee.setPositionId(3L);
+        employee.setBirthDate(birthDate);
+        employee.setCurrentPhase("PREBOARDING");
+        return employee;
+    }
 
     //정상 토큰 테스트 -> Bearer  제거 후 사원 ID 반환
     @Test

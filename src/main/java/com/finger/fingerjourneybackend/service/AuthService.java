@@ -22,11 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.format.ResolverStyle;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -38,7 +35,7 @@ import java.util.HexFormat;
 public class AuthService {
 
     private static final DateTimeFormatter BIRTH_DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
+            DateTimeFormatter.ofPattern("yyMMdd");
 
     private final EmployeeRepository employeeRepository;
     private final JwtTokenProvider jwtTokenProvider;
@@ -53,20 +50,11 @@ public class AuthService {
         Employee employee = employeeRepository.findByEmployeeNo(request.getEmpNo())
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
 
+        // DB의 실제 날짜를 YYMMDD로 비교하여 세기를 추측하거나 날짜를 보정하지 않는다.
         String birthDateText = request.getBirthDate();
-        if (birthDateText == null || !birthDateText.matches("[0-9]{8}")) {
-            throw new CustomException(ErrorCode.LOGIN_FAILED);
-        }
-
-        LocalDate birthDate;
-        try {
-            // STRICT: 2월 31일처럼 존재하지 않는 날짜를 자동 보정하지 않고 거절한다.
-            birthDate = LocalDate.parse(birthDateText, BIRTH_DATE_FORMATTER);
-        } catch (DateTimeParseException e) {
-            throw new CustomException(ErrorCode.LOGIN_FAILED);
-        }
-
-        if (!birthDate.equals(employee.getBirthDate())) {
+        if (birthDateText == null || !birthDateText.matches("[0-9]{6}")
+                || employee.getBirthDate() == null
+                || !birthDateText.equals(employee.getBirthDate().format(BIRTH_DATE_FORMATTER))) {
             throw new CustomException(ErrorCode.LOGIN_FAILED);
         }
 
