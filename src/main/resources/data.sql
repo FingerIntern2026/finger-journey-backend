@@ -407,3 +407,31 @@ INSERT INTO three_line_poem_line (poem_id, letter, text, line_order) VALUES
 ON CONFLICT (poem_id, line_order) DO NOTHING;
 
 SELECT setval('three_line_poem_poem_id_seq', (SELECT MAX(poem_id) FROM three_line_poem));
+
+-- 핑거위키 기본 데이터: 프론트 위키 화면 목업(wikiCategories.js)과 같은 내용
+-- id를 직접 지정해서 넣었기 때문에, 아래에서 시퀀스를 현재 최대값 기준으로 다시 맞춰준다.
+-- 앱을 다시 실행해도 중복되지 않도록 ON CONFLICT DO NOTHING 처리 (관리자가 지운 기본 항목은 다음 실행 때 다시 생김)
+INSERT INTO wiki_category (wiki_category_id, category_name, icon, display_order) VALUES
+    (1, '회사생활 꿀팁', '🏠', 1),
+    (2, '선배들의 꿀팁', '🎁', 2),
+    (3, '회사 지도', '🗺️', 3),
+    (4, '회사 주변 맛집', '🍜', 4),
+    (5, '포레스트 & 레벨업', '🌲', 5)
+ON CONFLICT (wiki_category_id) DO NOTHING;
+
+INSERT INTO wiki_item (wiki_item_id, wiki_category_id, title, content, icon, display_order) VALUES
+    (1, 1, '회의실 예약하는 법', '핑거 ERP의 예약 메뉴에서 회의실과 날짜·시간·인원을 선택해 예약해요. 30분 단위로 예약할 수 있어요.', '🗓️', 1),
+    (2, 1, '복합기 사용법', '복합기 화면에서 사번으로 로그인한 뒤 출력, 복사, 스캔 중 필요한 기능을 선택해주세요.', '🖨️', 2),
+    (3, 1, '택배 받는 법', '도착 알림을 확인하고 1층 수령 장소에서 본인 이름이 적힌 택배를 찾아주세요.', '📦', 3),
+    (4, 1, '사내 와이파이 연결', '안내받은 사내 계정으로 와이파이에 연결한 뒤, 접속이 되지 않으면 관리자에게 문의해주세요.', '📶', 4),
+    (5, 1, '연차·반차 신청 방법', 'HR 시스템에서 휴가 유형과 일정을 입력해 신청하고, 승인 상태를 확인해주세요.', '🌴', 5),
+    (6, 1, '회식비 정산 방법', '회식비 영수증을 첨부한 뒤 정산 요청을 등록하면 담당자가 확인해요.', '🍴', 6),
+    (7, 2, '업무일지는 그냥 바로 쓰는 게 편해요', '업무를 마친 직후 핵심만 기록해두면 나중에 회고와 인수인계가 훨씬 편해져요.', '🫧', 1),
+    (8, 3, '회의실 위치 안내', '회의실은 층별 안내도에서 확인할 수 있으며, 예약 화면에서도 위치를 함께 확인할 수 있어요.', '📍', 1),
+    (9, 4, '점심 맛집 추천', '도보 거리와 대기 시간을 고려한 팀원 추천 맛집을 확인해보세요.', '🥢', 1),
+    (10, 5, '포레스트(Forest)가 뭔가요?', '포레스트는 회사 생활에 필요한 지식과 문화를 배우고, 나만의 여정을 완성해가는 성장 공간이에요.', '🌲', 1),
+    (11, 5, '포레스트와 레벨업은 무슨 관계예요?', '포레스트에서 항목을 완료할수록 여정 진행도가 쌓이고 다음 레벨의 콘텐츠를 만날 수 있어요.', '🔗', 2)
+ON CONFLICT (wiki_item_id) DO NOTHING;
+
+SELECT setval('wiki_category_wiki_category_id_seq', (SELECT MAX(wiki_category_id) FROM wiki_category));
+SELECT setval('wiki_item_wiki_item_id_seq', (SELECT MAX(wiki_item_id) FROM wiki_item));
