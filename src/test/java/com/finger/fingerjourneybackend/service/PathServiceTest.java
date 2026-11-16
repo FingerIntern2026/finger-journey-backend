@@ -2,19 +2,14 @@ package com.finger.fingerjourneybackend.service;
 
 import com.finger.fingerjourneybackend.dto.path.response.PathMapItemResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageClearResponseDto;
-import com.finger.fingerjourneybackend.dto.path.response.PathStageDetailResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageEnterResponseDto;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.EmployeeOnboardingStage;
-import com.finger.fingerjourneybackend.entity.Media;
 import com.finger.fingerjourneybackend.entity.OnboardingStage;
-import com.finger.fingerjourneybackend.entity.OnboardingStageMedia;
 import com.finger.fingerjourneybackend.exception.CustomException;
 import com.finger.fingerjourneybackend.exception.ErrorCode;
 import com.finger.fingerjourneybackend.repository.EmployeeOnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
-import com.finger.fingerjourneybackend.repository.MediaRepository;
-import com.finger.fingerjourneybackend.repository.OnboardingStageMediaRepository;
 import com.finger.fingerjourneybackend.repository.OnboardingStageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,12 +38,6 @@ class PathServiceTest {
 
     @Mock
     private EmployeeOnboardingStageRepository employeeOnboardingStageRepository;
-
-    @Mock
-    private OnboardingStageMediaRepository onboardingStageMediaRepository;
-
-    @Mock
-    private MediaRepository mediaRepository;
 
     @InjectMocks
     private PathService pathService;
@@ -148,38 +137,6 @@ class PathServiceTest {
 
         assertThat(response.getAllowed()).isTrue();
         assertThat(response.getStatus()).isEqualTo("IN_PROGRESS");
-    }
-
-    // 스테이지에 연결된 미디어를 표시 순서와 함께 반환
-    @Test
-    void getStageDetailReturnsConnectedMedia() {
-        OnboardingStage stage = stage(2L, "이메일", 2);
-
-        OnboardingStageMedia stageMedia = new OnboardingStageMedia();
-        stageMedia.setOnboardingStageId(2L);
-        stageMedia.setMediaId(10L);
-        stageMedia.setDisplayOrder(1);
-
-        Media media = new Media();
-        media.setMediaId(10L);
-        media.setFileUrl("/stage/email-1.png");
-
-        when(employeeRepository.existsById(1L)).thenReturn(true);
-        when(onboardingStageRepository.findById(2L))
-                .thenReturn(Optional.of(stage));
-        when(onboardingStageMediaRepository
-                .findByOnboardingStageIdOrderByDisplayOrderAsc(2L))
-                .thenReturn(List.of(stageMedia));
-        when(mediaRepository.findById(10L)).thenReturn(Optional.of(media));
-
-        List<PathStageDetailResponseDto> response =
-                pathService.getStageDetail(1L, 2L);
-
-        assertThat(response).singleElement().satisfies(item -> {
-            assertThat(item.getStageName()).isEqualTo("이메일");
-            assertThat(item.getMediaUrl()).isEqualTo("/stage/email-1.png");
-            assertThat(item.getDisplayOrder()).isEqualTo(1);
-        });
     }
 
     // 진입 기록이 없으면 스테이지 완료 처리 실패

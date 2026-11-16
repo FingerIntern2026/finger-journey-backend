@@ -435,3 +435,25 @@ ON CONFLICT (wiki_item_id) DO NOTHING;
 
 SELECT setval('wiki_category_wiki_category_id_seq', (SELECT MAX(wiki_category_id) FROM wiki_category));
 SELECT setval('wiki_item_wiki_item_id_seq', (SELECT MAX(wiki_item_id) FROM wiki_item));
+
+-- 온보딩 오솔길 기본 스테이지
+-- 프론트 pathMapData.js의 실제 콘텐츠 스테이지 8개와 순서를 맞춘다.
+WITH stage_seed(stage_name, stage_order) AS (
+    VALUES
+        ('핑거 이야기', 1),
+        ('취업규칙', 2),
+        ('인사규정', 3),
+        ('윤리규정', 4),
+        ('이메일', 5),
+        ('법인카드', 6),
+        ('포레스트', 7),
+        ('레벨업', 8)
+)
+INSERT INTO onboarding_stage (stage_name, stage_order)
+SELECT seed.stage_name, seed.stage_order
+FROM stage_seed seed
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM onboarding_stage stage
+    WHERE stage.stage_order = seed.stage_order
+);

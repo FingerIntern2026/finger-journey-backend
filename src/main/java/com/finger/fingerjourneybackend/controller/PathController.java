@@ -5,7 +5,6 @@ import com.finger.fingerjourneybackend.dto.ApiResponseDto;
 import com.finger.fingerjourneybackend.dto.path.request.PathStageRequestDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathMapItemResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageClearResponseDto;
-import com.finger.fingerjourneybackend.dto.path.response.PathStageDetailResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageEnterResponseDto;
 import com.finger.fingerjourneybackend.service.AuthService;
 import com.finger.fingerjourneybackend.service.PathService;
@@ -64,31 +63,6 @@ public class PathController {
 
         return new ApiResponseDto<>(
                 pathService.enterStage(
-                        employeeId,
-                        request.getStageId()
-                )
-        );
-    }
-
-    // 스테이지에 연결된 미디어를 표시 순서대로 조회
-    @PostMapping("/stage/detail")
-    public ApiResponseDto<List<PathStageDetailResponseDto>>
-    getStageDetail(
-            @RequestHeader(
-                    value = "Authorization",
-                    required = false
-            )
-            String authorization,
-
-            @Valid
-            @RequestBody
-            PathStageRequestDto request
-    ) {
-        Long employeeId =
-                authService.getEmployeeId(authorization);
-
-        return new ApiResponseDto<>(
-                pathService.getStageDetail(
                         employeeId,
                         request.getStageId()
                 )

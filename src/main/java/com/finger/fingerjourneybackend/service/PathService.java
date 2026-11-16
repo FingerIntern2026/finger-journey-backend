@@ -2,19 +2,14 @@ package com.finger.fingerjourneybackend.service;
 
 import com.finger.fingerjourneybackend.dto.path.response.PathMapItemResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageClearResponseDto;
-import com.finger.fingerjourneybackend.dto.path.response.PathStageDetailResponseDto;
 import com.finger.fingerjourneybackend.dto.path.response.PathStageEnterResponseDto;
 import com.finger.fingerjourneybackend.entity.Employee;
 import com.finger.fingerjourneybackend.entity.EmployeeOnboardingStage;
-import com.finger.fingerjourneybackend.entity.Media;
 import com.finger.fingerjourneybackend.entity.OnboardingStage;
-import com.finger.fingerjourneybackend.entity.OnboardingStageMedia;
 import com.finger.fingerjourneybackend.exception.CustomException;
 import com.finger.fingerjourneybackend.exception.ErrorCode;
 import com.finger.fingerjourneybackend.repository.EmployeeOnboardingStageRepository;
 import com.finger.fingerjourneybackend.repository.EmployeeRepository;
-import com.finger.fingerjourneybackend.repository.MediaRepository;
-import com.finger.fingerjourneybackend.repository.OnboardingStageMediaRepository;
 import com.finger.fingerjourneybackend.repository.OnboardingStageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,9 +36,6 @@ public class PathService {
     private final OnboardingStageRepository onboardingStageRepository;
     private final EmployeeOnboardingStageRepository
             employeeOnboardingStageRepository;
-    private final OnboardingStageMediaRepository
-            onboardingStageMediaRepository;
-    private final MediaRepository mediaRepository;
 
     // 전체 온보딩 스테이지와 로그인 사원 진행 상태 조회
     public List<PathMapItemResponseDto> getPathMap(
@@ -123,36 +115,6 @@ public class PathService {
                 .allowed(true)
                 .status(progress.getStatus())
                 .build();
-    }
-
-    // 스테이지에 연결된 미디어를 표시 순서대로 조회.
-    public List<PathStageDetailResponseDto> getStageDetail(
-            Long employeeId,
-            Long stageId
-    ) {
-        validateEmployee(employeeId);
-
-        OnboardingStage stage = findStage(stageId);
-
-        List<OnboardingStageMedia> stageMediaList =
-                onboardingStageMediaRepository
-                        .findByOnboardingStageIdOrderByDisplayOrderAsc(
-                                stageId
-                        );
-
-        return stageMediaList.stream()
-                .map(stageMedia -> {
-                    String mediaUrl = findMediaUrl(
-                            stageMedia.getMediaId()
-                    );
-
-                    return toStageDetailResponse(
-                            stage,
-                            stageMedia,
-                            mediaUrl
-                    );
-                })
-                .toList();
     }
 
     // 진입한 스테이지를 완료 상태로 변경.
@@ -235,26 +197,6 @@ public class PathService {
                 .stageOrder(stage.getStageOrder())
                 .status(status)
                 .build();
-    }
-
-    // 스테이지와 미디어 정보를 상세 조회 응답 DTO로 변환.
-    private PathStageDetailResponseDto toStageDetailResponse(
-            OnboardingStage stage,
-            OnboardingStageMedia stageMedia,
-            String mediaUrl
-    ) {
-        return PathStageDetailResponseDto.builder()
-                .stageName(stage.getStageName())
-                .mediaUrl(mediaUrl)
-                .displayOrder(stageMedia.getDisplayOrder())
-                .build();
-    }
-
-    // 미디어 ID로 파일 URL 조회 (연결된 미디어가 없으면 null 반환)
-    private String findMediaUrl(Long mediaId) {
-        return mediaRepository.findById(mediaId)
-                .map(Media::getFileUrl)
-                .orElse(null);
     }
 
     // 스테이지 최초 진입 기록 생성.
