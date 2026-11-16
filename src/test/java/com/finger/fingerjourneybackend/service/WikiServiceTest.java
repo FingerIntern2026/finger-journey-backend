@@ -146,6 +146,8 @@ class WikiServiceTest {
         assertThat(response.getTitle()).isEqualTo("복합기 사용법");
         assertThat(response.getContent()).isEqualTo("본문");
         assertThat(response.getMediaUrl()).containsExactly("/media/a.png", "/media/b.png");
+        // 주소와 ID는 같은 순서로 짝이 맞아야 한다.
+        assertThat(response.getMediaId()).containsExactly(12L, 10L);
     }
 
     @Test
@@ -164,7 +166,11 @@ class WikiServiceTest {
                 .thenReturn(List.of(link(5L, 10L, 1), link(5L, 11L, 2)));
         when(mediaRepository.findAllById(List.of(10L, 11L))).thenReturn(List.of(media(11L, "/media/only.png")));
 
-        assertThat(wikiService.getItem(5L).getMediaUrl()).containsExactly("/media/only.png");
+        WikiItemDetailResponseDto response = wikiService.getItem(5L);
+
+        assertThat(response.getMediaUrl()).containsExactly("/media/only.png");
+        // 건너뛴 이미지의 ID도 함께 빠져서 주소와 짝이 맞는다.
+        assertThat(response.getMediaId()).containsExactly(11L);
     }
 
     @Test

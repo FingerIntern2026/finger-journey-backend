@@ -26,7 +26,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -127,15 +126,20 @@ public class WikiService {
         Map<Long, String> fileUrlByMediaId = mediaRepository.findAllById(mediaIds).stream()
                 .collect(Collectors.toMap(Media::getMediaId, Media::getFileUrl));
 
-        List<String> mediaUrls = mediaIds.stream()
+        // 파일이 없는 이미지는 건너뛰고, 주소(mediaUrl)와 ID(mediaId)가 같은 순서로 짝이 맞게 만든다.
+        List<Long> existingMediaIds = mediaIds.stream()
+                .filter(fileUrlByMediaId::containsKey)
+                .toList();
+
+        List<String> mediaUrls = existingMediaIds.stream()
                 .map(fileUrlByMediaId::get)
-                .filter(Objects::nonNull)
                 .toList();
 
         return WikiItemDetailResponseDto.builder()
                 .title(item.getTitle())
                 .content(item.getContent())
                 .mediaUrl(mediaUrls)
+                .mediaId(existingMediaIds)
                 .build();
     }
 
