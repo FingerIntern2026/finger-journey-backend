@@ -10,7 +10,7 @@ public class LoginRequestDto {
 
     @NotBlank(message = "사번은 필수입니다.")
     @Pattern(regexp = "[0-9]{8}", message = "사번은 숫자 8자리여야 합니다.")
-    private String empNo;
+    private String employeeNo;
 
     @NotBlank(message = "생년월일은 필수입니다.")
     @Pattern(regexp = "[0-9]{6}", message = "생년월일은 YYMMDD 형식의 숫자 6자리여야 합니다.")

@@ -47,7 +47,7 @@ public class AuthService {
     // 사번과 생년월일을 검증하고, 직원 정보와 발급한 토큰을 반환한다.
     @Transactional
     public LoginResponseDto authenticate(LoginRequestDto request) {
-        Employee employee = employeeRepository.findByEmployeeNo(request.getEmpNo())
+        Employee employee = employeeRepository.findByEmployeeNo(request.getEmployeeNo())
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
 
         // DB의 실제 날짜를 YYMMDD로 비교하여 세기를 추측하거나 날짜를 보정하지 않는다.
