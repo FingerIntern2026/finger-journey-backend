@@ -83,7 +83,7 @@ class AuthServiceTest {
 
     private LoginRequestDto request(String birthDate) {
         LoginRequestDto request = new LoginRequestDto();
-        ReflectionTestUtils.setField(request, "empNo", "12345678");
+        ReflectionTestUtils.setField(request, "employeeNo", "12345678");
         ReflectionTestUtils.setField(request, "birthDate", birthDate);
         return request;
     }
