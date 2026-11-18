@@ -69,7 +69,10 @@ public class AuthService {
                 .map(Admin::getRole)
                 .orElse(null);
 
-        String redirectScreen = resolveRedirectScreen(employee.getCurrentPhase());
+        // 관리자 계정은 직원 진행 단계와 관계없이 핑거 위키 첫 화면에서 시작한다.
+        String redirectScreen = adminRole != null
+                ? "WIK_INT_P01"
+                : resolveRedirectScreen(employee.getCurrentPhase());
 
         String accessToken = jwtTokenProvider.createAccessToken(employee.getEmployeeId());
         String refreshToken = jwtTokenProvider.createRefreshToken(employee.getEmployeeId());

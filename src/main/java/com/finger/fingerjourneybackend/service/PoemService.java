@@ -34,7 +34,6 @@ public class PoemService {
         if (request.getLines().size() != request.getName().length()) {
             throw new CustomException(ErrorCode.ACROSTIC_LENGTH_MISMATCH);
         }
-
         ThreeLinePoem poem = threeLinePoemRepository.findByEmployeeId(request.getEmployeeId()).orElse(null);
         if (poem == null) {
             poem = new ThreeLinePoem();
