@@ -52,8 +52,8 @@ class AuthServiceTest {
     private AuthService authService;
 
     @ParameterizedTest
-    @CsvSource({"1999-12-31,991231", "2000-02-29,000229", "2005-03-15,050315"})
-    void loginAcceptsSixDigitBirthDate(String storedDate, String input) {
+    @CsvSource({"1999-12-31,19991231", "2000-02-29,20000229", "2005-03-15,20050315"})
+    void loginAcceptsEightDigitBirthDate(String storedDate, String input) {
         Employee employee = employee(LocalDate.parse(storedDate));
         when(employeeRepository.findByEmployeeNo("12345678")).thenReturn(Optional.of(employee));
         when(organizationRepository.findById(2L)).thenReturn(Optional.empty());
@@ -71,7 +71,7 @@ class AuthServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"990230", "991232", "991230", "19991231", "abcdef", "12345"})
+    @CsvSource({"19990230", "19991232", "19991230", "20991231", "991231", "abcdefgh", "1234567"})
     void loginRejectsInvalidOrMismatchedBirthDate(String input) {
         when(employeeRepository.findByEmployeeNo("12345678"))
                 .thenReturn(Optional.of(employee(LocalDate.of(1999, 12, 31))));
