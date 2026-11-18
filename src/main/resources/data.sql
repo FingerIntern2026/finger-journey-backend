@@ -21,7 +21,7 @@ INSERT INTO employee (employee_id, employee_no, name, organization_id, position_
 ON CONFLICT (employee_id) DO NOTHING;
 
 -- 발표용 직원은 단계별 진입 계정 3명, 진행/리포트 시연 계정 1명, 관리자 1명만 둔다.
--- 화면 입력 생년월일: 20000315 (서버 요청에는 YYMMDD 형식 000315로 전달)
+-- 화면과 서버 모두 8자리 생년월일 사용: 20000315
 -- 이신입 12609002: PREBOARDING → PB_LGN_P02
 -- 윤체험 12609008: BAG → CHK_INT_P01
 -- 김신입 12609001: ONBOARDING → PTH_MAP_P01, 오솔길 진행 현황 확인용
@@ -165,31 +165,84 @@ ON CONFLICT (screen_code) DO UPDATE SET
     display_order = EXCLUDED.display_order;
 
 -- 징검다리 퀴즈 9문항 (AI 완주 리포트 생성 시 필요한 9개 응답의 근거)
+-- 징검다리 퀴즈 9문항: 프론트 화면(quizData.js)의 문항·보기와 같은 내용과 순서로 맞춘다.
+-- (음식 1~3, 휴식 4~6, 협업 7~9) 이미 들어 있는 문항도 같은 내용으로 갱신한다.
 INSERT INTO quiz (quiz_id, question, option1, option2, option3, option4, display_order) VALUES
-    (1, '출근 후 가장 먼저 하는 것은?', '커피 마시기', '메일 확인', '일정 확인', '동료와 대화', 1),
-    (2, '커피 취향은?', '아메리카노', '라떼', '에스프레소', '안 마심', 2),
-    (3, '점심 스타일은?', '혼밥', '같이 먹기', '배달', '도시락', 3),
-    (4, '휴식 스타일은?', '산책', '낮잠', '수다', '폰 보기', 4),
-    (5, '여행 스타일은?', '즉흥형', '계획형', '반반', '안 감', 5),
-    (6, '협업 스타일은?', '바로 이야기', '생각 후 이야기', '메신저', '회의', 6),
-    (7, '친해지는 법은?', '먼저 걸어요', '기다려요', '활동으로', '천천히', 7),
-    (8, '맵기 레벨은?', '순한맛', '중간맛', '매운맛', '불맛', 8),
-    (9, '출근길엔?', '음악', '팟캐스트', '조용히', '통화', 9)
-ON CONFLICT (quiz_id) DO NOTHING;
+    (1, '어떤 커피를 좋아하시나요?', '아메리카노', '라떼', '달달한 음료', '커피 안 마셔요', 1),
+    (2, '어떤 점심 메뉴를 좋아하시나요?', '한식', '양식', '중식', '일식', 2),
+    (3, '어떤 맵기를 잘 드시나요?', '못 먹어요', '살짝 매운맛(신라면)', '매운맛(불닭)', '매운맛 러버', 3),
+    (4, '쉬는 날을 어떻게 보내시나요?', '집에서 충전', '맛집 · 카페', '운동', '여행 · 나들이', 4),
+    (5, '어떤 계절을 좋아하시나요?', '봄', '여름', '가을', '겨울', 5),
+    (6, '여행은 어떻게 즐기시나요?', '계획형', '즉흥형', '맛집 중심', '휴양 중심', 6),
+    (7, '어떻게 다가가면 가장 편하신가요?', '먼저 말 걸어주세요', '밥 같이 먹어요', '커피 좋아요', '천천히 친해져요', 7),
+    (8, '출근길에는 주로 뭘 하시나요?', '음악', '유튜브 · 팟캐스트', '아무것도 안 들음', '자는 편', 8),
+    (9, '함께 일할 때 어떤 방식이 편하신가요?', '바로 이야기하기', '메신저 선호', '같이 모여 공유하기', '먼저 생각한 뒤 이야기', 9)
+ON CONFLICT (quiz_id) DO UPDATE SET
+    question = EXCLUDED.question,
+    option1 = EXCLUDED.option1,
+    option2 = EXCLUDED.option2,
+    option3 = EXCLUDED.option3,
+    option4 = EXCLUDED.option4,
+    display_order = EXCLUDED.display_order;
 
 SELECT setval('quiz_quiz_id_seq', (SELECT MAX(quiz_id) FROM quiz));
 
+-- 문항을 바꾸기 전에 저장된 응답(옛 보기 글자)을 같은 위치의 새 보기로 바꾼다.
+-- 옛 보기 글자가 남아 있는 행만 바뀌고, 같은 문항 안에서 옛 보기와 새 보기가 겹치지 않아 여러 번 실행해도 결과가 같다.
+UPDATE quiz_response response
+SET selected_option = mapping.new_option
+FROM (VALUES
+    (1, '커피 마시기', '아메리카노'),
+    (1, '메일 확인', '라떼'),
+    (1, '일정 확인', '달달한 음료'),
+    (1, '동료와 대화', '커피 안 마셔요'),
+    (2, '아메리카노', '한식'),
+    (2, '라떼', '양식'),
+    (2, '에스프레소', '중식'),
+    (2, '안 마심', '일식'),
+    (3, '혼밥', '못 먹어요'),
+    (3, '같이 먹기', '살짝 매운맛(신라면)'),
+    (3, '배달', '매운맛(불닭)'),
+    (3, '도시락', '매운맛 러버'),
+    (4, '산책', '집에서 충전'),
+    (4, '낮잠', '맛집 · 카페'),
+    (4, '수다', '운동'),
+    (4, '폰 보기', '여행 · 나들이'),
+    (5, '즉흥형', '봄'),
+    (5, '계획형', '여름'),
+    (5, '반반', '가을'),
+    (5, '안 감', '겨울'),
+    (6, '바로 이야기', '계획형'),
+    (6, '생각 후 이야기', '즉흥형'),
+    (6, '메신저', '맛집 중심'),
+    (6, '회의', '휴양 중심'),
+    (7, '먼저 걸어요', '먼저 말 걸어주세요'),
+    (7, '기다려요', '밥 같이 먹어요'),
+    (7, '활동으로', '커피 좋아요'),
+    (7, '천천히', '천천히 친해져요'),
+    (8, '순한맛', '음악'),
+    (8, '중간맛', '유튜브 · 팟캐스트'),
+    (8, '매운맛', '아무것도 안 들음'),
+    (8, '불맛', '자는 편'),
+    (9, '음악', '바로 이야기하기'),
+    (9, '팟캐스트', '메신저 선호'),
+    (9, '조용히', '같이 모여 공유하기'),
+    (9, '통화', '먼저 생각한 뒤 이야기')
+) AS mapping(quiz_id, old_option, new_option)
+WHERE response.quiz_id = mapping.quiz_id
+  AND response.selected_option = mapping.old_option;
+
 -- 테스트용 : 김신입(employee_id=1)의 퀴즈 응답 9개 + 3행시 (AI 완주 리포트 생성 데모용)
 INSERT INTO quiz_response (employee_id, quiz_id, selected_option, answered_at) VALUES
-    (1, 1, '메일 확인', now()),
-    (1, 2, '아메리카노', now()),
-    (1, 3, '같이 먹기', now()),
-    (1, 4, '산책', now()),
-    (1, 5, '즉흥형', now()),
-    (1, 6, '바로 이야기', now()),
-    (1, 7, '먼저 걸어요', now()),
-    (1, 8, '매운맛', now()),
-    (1, 9, '음악', now())
+    (1, 1, '라떼', now()),
+    (1, 2, '한식', now()),
+    (1, 3, '살짝 매운맛(신라면)', now()),
+    (1, 4, '집에서 충전', now()),
+    (1, 5, '봄', now()),
+    (1, 6, '계획형', now()),
+    (1, 7, '먼저 말 걸어주세요', now()),
+    (1, 8, '아무것도 안 들음', now()),
+    (1, 9, '바로 이야기하기', now())
 ON CONFLICT (employee_id, quiz_id) DO NOTHING;
 
 INSERT INTO three_line_poem (poem_id, employee_id) VALUES (1, 1) ON CONFLICT (poem_id) DO NOTHING;
@@ -200,17 +253,38 @@ INSERT INTO three_line_poem_line (poem_id, letter, text, line_order) VALUES
     (1, '입', '입사 후 멋지게 성장하겠습니다', 2)
 ON CONFLICT (poem_id, line_order) DO NOTHING;
 
+-- 이신입의 퀴즈·3행시 입력은 리포트 API 시연용으로 둔다.
+INSERT INTO quiz_response (employee_id, quiz_id, selected_option, answered_at) VALUES
+    (2, 1, '달달한 음료', now()),
+    (2, 2, '양식', now()),
+    (2, 3, '못 먹어요', now()),
+    (2, 4, '맛집 · 카페', now()),
+    (2, 5, '여름', now()),
+    (2, 6, '즉흥형', now()),
+    (2, 7, '밥 같이 먹어요', now()),
+    (2, 8, '음악', now()),
+    (2, 9, '메신저 선호', now())
+ON CONFLICT (employee_id, quiz_id) DO NOTHING;
+
+INSERT INTO three_line_poem (poem_id, employee_id) VALUES (2, 2) ON CONFLICT (poem_id) DO NOTHING;
+
+INSERT INTO three_line_poem_line (poem_id, letter, text, line_order) VALUES
+    (2, '이', '이번 기회에 차근차근 배워서', 0),
+    (2, '신', '신중하게 하나씩 익히고', 1),
+    (2, '입', '입지를 단단히 다지겠습니다', 2)
+ON CONFLICT (poem_id, line_order) DO NOTHING;
+
 -- 최준비는 퀴즈 응답과 3행시가 있지만 AI 리포트는 없어 라이브 생성 시연에 사용한다.
 INSERT INTO quiz_response (employee_id, quiz_id, selected_option, answered_at) VALUES
-    (4, 1, '동료와 대화', now()),
-    (4, 2, '에스프레소', now()),
-    (4, 3, '배달', now()),
-    (4, 4, '수다', now()),
-    (4, 5, '반반', now()),
-    (4, 6, '메신저', now()),
-    (4, 7, '활동으로', now()),
-    (4, 8, '불맛', now()),
-    (4, 9, '통화', now())
+    (4, 1, '커피 안 마셔요', now()),
+    (4, 2, '중식', now()),
+    (4, 3, '매운맛(불닭)', now()),
+    (4, 4, '운동', now()),
+    (4, 5, '가을', now()),
+    (4, 6, '맛집 중심', now()),
+    (4, 7, '커피 좋아요', now()),
+    (4, 8, '자는 편', now()),
+    (4, 9, '먼저 생각한 뒤 이야기', now())
 ON CONFLICT (employee_id, quiz_id) DO NOTHING;
 
 INSERT INTO three_line_poem (poem_id, employee_id) VALUES (3, 4) ON CONFLICT (poem_id) DO NOTHING;
