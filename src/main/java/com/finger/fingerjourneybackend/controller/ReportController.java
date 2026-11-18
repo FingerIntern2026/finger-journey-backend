@@ -37,4 +37,3 @@ public class ReportController {
         return new ApiResponseDto<>(reportService.getReportDetail(request.getEmployeeId()));
     }
 }
-
