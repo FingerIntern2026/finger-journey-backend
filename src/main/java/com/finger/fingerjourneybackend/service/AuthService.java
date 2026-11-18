@@ -35,7 +35,7 @@ import java.util.HexFormat;
 public class AuthService {
 
     private static final DateTimeFormatter BIRTH_DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyMMdd");
+            DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final EmployeeRepository employeeRepository;
     private final JwtTokenProvider jwtTokenProvider;
@@ -50,9 +50,9 @@ public class AuthService {
         Employee employee = employeeRepository.findByEmployeeNo(request.getEmployeeNo())
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
 
-        // DB의 실제 날짜를 YYMMDD로 비교하여 세기를 추측하거나 날짜를 보정하지 않는다.
+        // 입력받은 8자리 생년월일을 DB의 실제 날짜와 연도 전체까지 비교한다.
         String birthDateText = request.getBirthDate();
-        if (birthDateText == null || !birthDateText.matches("[0-9]{6}")
+        if (birthDateText == null || !birthDateText.matches("[0-9]{8}")
                 || employee.getBirthDate() == null
                 || !birthDateText.equals(employee.getBirthDate().format(BIRTH_DATE_FORMATTER))) {
             throw new CustomException(ErrorCode.LOGIN_FAILED);
